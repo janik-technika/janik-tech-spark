@@ -287,13 +287,31 @@ const Index = () => {
           </header>
           <div className="glass rounded-xl p-6 grid md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <h3 className="font-semibold">JANÍK zahradní a lesní technika</h3>
-              <p className="text-sm text-muted-foreground">(doplnit ulici a číslo)<br/>(PSČ) (město)</p>
-              <p className="text-sm text-muted-foreground">Tel.: +420 000 000 000<br/>E-mail: info@janik.cz</p>
+              <h3 className="font-semibold">Kontaktní informace – prodejna</h3>
+              <p className="text-sm text-muted-foreground">
+                JANÍK – zahradní a lesní technika<br/>
+                Tylovice 1828, Rožnov pod Radhoštěm
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Tel.: +420 606 806 021<br/>
+                E-mail: janik.stihl@gmail.com
+              </p>
             </div>
-            <div className="md:col-span-2 flex items-center gap-3">
-              <a href="tel:+420000000000"><Button variant="hero">Zavolat</Button></a>
-              <a href="mailto:info@janik.cz"><Button variant="glass">Napsat e‑mail</Button></a>
+            <div className="space-y-2">
+              <h3 className="font-semibold">Fakturační adresa</h3>
+              <p className="text-sm text-muted-foreground">
+                Bronislav Janík<br/>
+                Prostřední Bečva 232<br/>
+                756 56 Prostřední Bečva
+              </p>
+              <p className="text-sm text-muted-foreground">
+                IČ: 49582534<br/>
+                DIČ: CZ-7206195876
+              </p>
+            </div>
+            <div className="flex items-start md:items-center gap-3">
+              <a href="tel:+420606806021"><Button variant="hero">Zavolat</Button></a>
+              <a href="mailto:janik.stihl@gmail.com"><Button variant="glass">Napsat e‑mail</Button></a>
             </div>
           </div>
         </section>

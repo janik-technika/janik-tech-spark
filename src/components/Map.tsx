@@ -1,17 +1,15 @@
 import React, { useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-
-// Fix Leaflet's default icon paths in bundlers (Vite)
-import markerIcon2xUrl from "leaflet/dist/images/marker-icon-2x.png";
-import markerIconUrl from "leaflet/dist/images/marker-icon.png";
-import markerShadowUrl from "leaflet/dist/images/marker-shadow.png";
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2xUrl,
-  iconUrl: markerIconUrl,
-  shadowUrl: markerShadowUrl,
-});
+import "ol/ol.css";
+import OLMap from "ol/Map";
+import View from "ol/View";
+import TileLayer from "ol/layer/Tile";
+import OSM from "ol/source/OSM";
+import { fromLonLat } from "ol/proj";
+import VectorLayer from "ol/layer/Vector";
+import VectorSource from "ol/source/Vector";
+import Feature from "ol/Feature";
+import Point from "ol/geom/Point";
+import { Circle as CircleStyle, Fill, Stroke, Style } from "ol/style";
 
 type MapProps = {
   address: string;
@@ -19,8 +17,9 @@ type MapProps = {
 
 const Map: React.FC<MapProps> = ({ address }) => {
   const mapEl = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<L.Map | null>(null);
-  const markerRef = useRef<L.Marker | null>(null);
+  const mapRef = useRef<OLMap | null>(null);
+  const markerSourceRef = useRef<VectorSource | null>(null);
+  const markerFeatureRef = useRef<Feature<Point> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,32 +48,41 @@ const Map: React.FC<MapProps> = ({ address }) => {
       if (cancelled || !mapEl.current) return;
 
       if (!mapRef.current) {
-        mapRef.current = L.map(mapEl.current, {
-          center: [center[1], center[0]],
-          zoom: 15,
-          zoomControl: false,
+        const osmLayer = new TileLayer({ source: new OSM() });
+
+        const markerSource = new VectorSource();
+        markerSourceRef.current = markerSource;
+        const markerLayer = new VectorLayer({
+          source: markerSource,
         });
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> přispěvatelé',
-          maxZoom: 19,
-        }).addTo(mapRef.current);
-
-        L.control.zoom({ position: "topright" }).addTo(mapRef.current);
+        mapRef.current = new OLMap({
+          target: mapEl.current,
+          layers: [osmLayer, markerLayer],
+          view: new View({
+            center: fromLonLat([center[0], center[1]]),
+            zoom: 15,
+          }),
+        });
       } else {
-        mapRef.current.setView([center[1], center[0]], 15);
+        mapRef.current.getView().setCenter(fromLonLat([center[0], center[1]]));
+        mapRef.current.getView().setZoom(15);
       }
 
-      if (markerRef.current) {
-        markerRef.current.setLatLng([center[1], center[0]]);
-      } else if (mapRef.current) {
-        markerRef.current = L.marker([center[1], center[0]]).addTo(mapRef.current);
+      // Marker
+      if (markerSourceRef.current) {
+        if (markerFeatureRef.current) {
+          markerFeatureRef.current.setGeometry(
+            new Point(fromLonLat([center[0], center[1]]))
+          );
+        } else {
+          const feature = new Feature(
+            new Point(fromLonLat([center[0], center[1]]))
+          );
+          markerSourceRef.current.addFeature(feature);
+          markerFeatureRef.current = feature;
+        }
       }
-
-      markerRef.current?.bindPopup(
-        `<strong>JANÍK – zahradní a lesní technika</strong><br/>${address}`
-      );
     }
 
     setup();
@@ -84,7 +92,26 @@ const Map: React.FC<MapProps> = ({ address }) => {
     };
   }, [address]);
 
-  return <div ref={mapEl} className="w-full h-72 md:h-96 rounded-xl overflow-hidden" />;
+  useEffect(() => {
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.setTarget(undefined as unknown as HTMLElement);
+        mapRef.current = null;
+      }
+      markerSourceRef.current = null;
+      markerFeatureRef.current = null;
+    };
+  }, []);
+
+  return (
+    <div
+      ref={mapEl}
+      className="w-full h-72 md:h-96 rounded-xl overflow-hidden"
+      role="img"
+      aria-label={`Mapa: ${address}`}
+    />
+  );
 };
 
 export default Map;
+

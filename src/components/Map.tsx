@@ -1,123 +1,90 @@
-import React, { useEffect, useRef, useState } from "react";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import React, { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix Leaflet's default icon paths in bundlers (Vite)
+import markerIcon2xUrl from "leaflet/dist/images/marker-icon-2x.png";
+import markerIconUrl from "leaflet/dist/images/marker-icon.png";
+import markerShadowUrl from "leaflet/dist/images/marker-shadow.png";
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2xUrl,
+  iconUrl: markerIconUrl,
+  shadowUrl: markerShadowUrl,
+});
 
 type MapProps = {
   address: string;
 };
 
 const Map: React.FC<MapProps> = ({ address }) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [token, setToken] = useState<string>(() =>
-    typeof window !== "undefined" ? localStorage.getItem("mapboxToken") || "" : ""
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const mapEl = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
   useEffect(() => {
-    if (!mapContainer.current || !token) return;
-
-    mapboxgl.accessToken = token;
-
     let cancelled = false;
 
-    const init = async () => {
+    async function setup() {
+      // Geocode přes Nominatim (OpenStreetMap)
+      let center: [number, number] = [18.1439, 49.4582]; // fallback: Rožnov pod Radhoštěm
       try {
-        setLoading(true);
-        setError("");
-        const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+        const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
           address
-        )}.json?limit=1&access_token=${token}`;
-        const res = await fetch(url);
+        )}&limit=1&addressdetails=1`;
+        const res = await fetch(url, {
+          headers: {
+            // User-Agent nelze v prohlížeči nastavit; Referer poslouží pro identifikaci
+            "Accept-Language": "cs",
+          },
+        });
         const data = await res.json();
-        const feature = data?.features?.[0];
-        // Fallback: přibližné souřadnice Rožnov pod Radhoštěm
-        const center: [number, number] = feature?.center || [18.1439, 49.4582];
+        if (Array.isArray(data) && data[0]?.lon && data[0]?.lat) {
+          center = [parseFloat(data[0].lon), parseFloat(data[0].lat)];
+        }
+      } catch (e) {
+        // ponecháme fallback
+      }
 
-        if (cancelled) return;
+      if (cancelled || !mapEl.current) return;
 
-        map.current?.remove();
-        map.current = new mapboxgl.Map({
-          container: mapContainer.current,
-          style: "mapbox://styles/mapbox/light-v11",
-          center,
-          zoom: 14,
+      if (!mapRef.current) {
+        mapRef.current = L.map(mapEl.current, {
+          center: [center[1], center[0]],
+          zoom: 15,
+          zoomControl: false,
         });
 
-        map.current.addControl(
-          new mapboxgl.NavigationControl({ visualizePitch: true }),
-          "top-right"
-        );
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> přispěvatelé',
+          maxZoom: 19,
+        }).addTo(mapRef.current);
 
-        const marker = new mapboxgl.Marker().setLngLat(center).addTo(map.current);
-        marker.setPopup(
-          new mapboxgl.Popup({ offset: 24 }).setHTML(
-            `<strong>JANÍK – zahradní a lesní technika</strong><br/>${address}`
-          )
-        );
-      } catch (e) {
-        setError("Nepodařilo se načíst mapu. Zkontrolujte Mapbox token.");
-      } finally {
-        if (!cancelled) setLoading(false);
+        L.control.zoom({ position: "topright" }).addTo(mapRef.current);
+      } else {
+        mapRef.current.setView([center[1], center[0]], 15);
       }
-    };
 
-    init();
+      if (markerRef.current) {
+        markerRef.current.setLatLng([center[1], center[0]]);
+      } else if (mapRef.current) {
+        markerRef.current = L.marker([center[1], center[0]]).addTo(mapRef.current);
+      }
+
+      markerRef.current?.bindPopup(
+        `<strong>JANÍK – zahradní a lesní technika</strong><br/>${address}`
+      );
+    }
+
+    setup();
 
     return () => {
       cancelled = true;
-      map.current?.remove();
     };
-  }, [address, token]);
+  }, [address]);
 
-  const handleSaveToken = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const input = (e.currentTarget.elements.namedItem("token") as HTMLInputElement) || null;
-    const value = input?.value.trim();
-    if (value) {
-      localStorage.setItem("mapboxToken", value);
-      setToken(value);
-    }
-  };
-
-  return (
-    <div className="relative w-full h-72 md:h-96 rounded-xl overflow-hidden">
-      {!token && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-          <form onSubmit={handleSaveToken} className="glass rounded-lg p-4 flex flex-col gap-2 w-[min(520px,90%)]">
-            <p className="text-sm text-muted-foreground">
-              Pro zobrazení mapy vložte prosím Mapbox public token (Dashboard → Tokens).
-            </p>
-            <input
-              name="token"
-              type="text"
-              placeholder="pk.XXXXXXXX..."
-              className="w-full rounded-md bg-background border border-white/10 px-3 py-2 text-sm"
-              aria-label="Mapbox public token"
-            />
-            <button
-              type="submit"
-              className="self-start inline-flex items-center rounded-md px-3 py-2 text-sm bg-primary text-primary-foreground"
-            >
-              Uložit token
-            </button>
-          </form>
-        </div>
-      )}
-      <div ref={mapContainer} className="absolute inset-0" />
-      {loading && (
-        <div className="absolute bottom-2 left-2 text-xs px-2 py-1 rounded bg-background/80">
-          Načítám mapu…
-        </div>
-      )}
-      {error && (
-        <div className="absolute bottom-2 left-2 text-xs px-2 py-1 rounded bg-destructive text-destructive-foreground">
-          {error}
-        </div>
-      )}
-    </div>
-  );
+  return <div ref={mapEl} className="w-full h-72 md:h-96 rounded-xl overflow-hidden" />;
 };
 
 export default Map;

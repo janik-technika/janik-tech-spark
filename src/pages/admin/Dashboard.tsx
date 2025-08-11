@@ -79,9 +79,9 @@ function useStoredState<T>(key: string, initial: T) {
 
 export default function AdminDashboard() {
   const { toast } = useToast();
-  const [owner, setOwner] = useStoredState("gh_owner", "janik-technika");
-  const [repo, setRepo] = useStoredState("gh_repo", "janik-tech-spark");
-  const [branch, setBranch] = useStoredState("gh_branch", "main");
+  const owner = "janik-technika";
+  const repo = "janik-tech-spark";
+  const branch = "main";
   const [rememberToken, setRememberToken] = useStoredState("gh_remember", true);
   const [tokenInput, setTokenInput] = useState("");
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -409,15 +409,15 @@ export default function AdminDashboard() {
           <CardContent className="grid gap-3">
             <div className="space-y-2">
               <Label htmlFor="owner">Owner (uživatel/organizace)</Label>
-              <Input id="owner" value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="např. my-org" />
+              <Input id="owner" value={owner} readOnly disabled aria-readonly placeholder="např. my-org" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="repo">Repozitář</Label>
-              <Input id="repo" value={repo} onChange={(e) => setRepo(e.target.value)} placeholder="např. janik-web" />
+              <Input id="repo" value={repo} readOnly disabled aria-readonly placeholder="např. janik-web" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="branch">Větev</Label>
-              <Input id="branch" value={branch} onChange={(e) => setBranch(e.target.value)} placeholder="main" />
+              <Input id="branch" value={branch} readOnly disabled aria-readonly placeholder="main" />
             </div>
           </CardContent>
         </Card>

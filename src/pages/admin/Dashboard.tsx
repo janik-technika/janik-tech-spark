@@ -6,6 +6,59 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { upsertFile, type GitHubConfig } from "@/lib/githubClient";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Pencil, Trash2, Plus } from "lucide-react";
+
+// Types and schemas
+export type Promotion = {
+  id: string;
+  title: string;
+  description?: string;
+  price?: string;
+  validUntil?: string; // YYYY-MM-DD
+  imageUrl?: string;
+  link?: string;
+  tags?: string[];
+};
+
+export type NewsItem = {
+  id: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  summary?: string;
+  body?: string;
+  imageUrl?: string;
+  link?: string;
+};
+
+const newsSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, "Zadejte nadpis"),
+  date: z.string().min(1, "Zadejte datum"),
+  summary: z.string().optional(),
+  body: z.string().optional(),
+  imageUrl: z.string().url("Musí být platná URL").optional().or(z.literal("")),
+  link: z.string().url("Musí být platná URL").optional().or(z.literal("")),
+});
+
+const promoSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, "Zadejte název"),
+  description: z.string().optional(),
+  price: z.string().optional(),
+  validUntil: z.string().optional(),
+  imageUrl: z.string().url("Musí být platná URL").optional().or(z.literal("")),
+  link: z.string().url("Musí být platná URL").optional().or(z.literal("")),
+  tags: z.string().optional(), // comma-separated in form
+});
+
+function genId() {
+  return Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
 
 function useStoredState<T>(key: string, initial: T) {
   const [val, setVal] = useState<T>(() => {
@@ -31,8 +84,125 @@ export default function AdminDashboard() {
   const [branch, setBranch] = useStoredState("gh_branch", "main");
   const [rememberToken, setRememberToken] = useStoredState("gh_remember", true);
   const [tokenInput, setTokenInput] = useState("");
-  const [newsJSON, setNewsJSON] = useState("[]");
-  const [promosJSON, setPromosJSON] = useState("[]");
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [promos, setPromos] = useState<Promotion[]>([]);
+
+  // Dialog states
+  const [newsDialogOpen, setNewsDialogOpen] = useState(false);
+  const [editingNewsIndex, setEditingNewsIndex] = useState<number | null>(null);
+  const [promoDialogOpen, setPromoDialogOpen] = useState(false);
+  const [editingPromoIndex, setEditingPromoIndex] = useState<number | null>(null);
+
+  // Forms
+  const newsForm = useForm<z.infer<typeof newsSchema>>({
+    resolver: zodResolver(newsSchema),
+    defaultValues: {
+      title: "",
+      date: new Date().toISOString().slice(0, 10),
+      summary: "",
+      body: "",
+      imageUrl: "",
+      link: "",
+    },
+  });
+
+  const promoForm = useForm<z.infer<typeof promoSchema>>({
+    resolver: zodResolver(promoSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      price: "",
+      validUntil: "",
+      imageUrl: "",
+      link: "",
+      tags: "",
+    },
+  });
+
+  // Reset forms when opening dialogs
+  useEffect(() => {
+    if (!newsDialogOpen) return;
+    const item = editingNewsIndex != null ? news[editingNewsIndex] : undefined;
+    newsForm.reset({
+      title: item?.title ?? "",
+      date: item?.date ?? new Date().toISOString().slice(0, 10),
+      summary: item?.summary ?? "",
+      body: item?.body ?? "",
+      imageUrl: item?.imageUrl ?? "",
+      link: item?.link ?? "",
+    });
+  }, [newsDialogOpen, editingNewsIndex]);
+
+  useEffect(() => {
+    if (!promoDialogOpen) return;
+    const item = editingPromoIndex != null ? promos[editingPromoIndex] : undefined;
+    promoForm.reset({
+      title: item?.title ?? "",
+      description: item?.description ?? "",
+      price: item?.price ?? "",
+      validUntil: item?.validUntil ?? "",
+      imageUrl: item?.imageUrl ?? "",
+      link: item?.link ?? "",
+      tags: (item?.tags ?? []).join(", "),
+    });
+  }, [promoDialogOpen, editingPromoIndex]);
+
+  // Handlers
+  const onSubmitNews = (values: z.infer<typeof newsSchema>) => {
+    const newItem: NewsItem = {
+      id: values.id || genId(),
+      title: values.title,
+      date: values.date,
+      summary: values.summary || undefined,
+      body: values.body || undefined,
+      imageUrl: values.imageUrl || undefined,
+      link: values.link || undefined,
+    };
+    setNews((prev) => {
+      const next = [...prev];
+      if (editingNewsIndex != null) next[editingNewsIndex] = newItem;
+      else next.unshift(newItem);
+      return next;
+    });
+    setNewsDialogOpen(false);
+    setEditingNewsIndex(null);
+    toast({ title: editingNewsIndex != null ? "Aktualita upravena" : "Aktualita přidána" });
+  };
+
+  const onSubmitPromo = (values: z.infer<typeof promoSchema>) => {
+    const newItem: Promotion = {
+      id: values.id || genId(),
+      title: values.title,
+      description: values.description || undefined,
+      price: values.price || undefined,
+      validUntil: values.validUntil || undefined,
+      imageUrl: values.imageUrl || undefined,
+      link: values.link || undefined,
+      tags: (values.tags || "")
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+    };
+    setPromos((prev) => {
+      const next = [...prev];
+      if (editingPromoIndex != null) next[editingPromoIndex] = newItem;
+      else next.unshift(newItem);
+      return next;
+    });
+    setPromoDialogOpen(false);
+    setEditingPromoIndex(null);
+    toast({ title: editingPromoIndex != null ? "Akce upravena" : "Akce přidána" });
+  };
+
+  const deleteNews = (idx: number) => {
+    if (!confirm("Opravdu smazat tuto aktualitu?")) return;
+    setNews((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const deletePromo = (idx: number) => {
+    if (!confirm("Opravdu smazat tuto akci?")) return;
+    setPromos((prev) => prev.filter((_, i) => i !== idx));
+  };
 
   const token = useMemo(() => {
     const s = sessionStorage.getItem("gh_pat") || "";
@@ -44,23 +214,47 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     document.title = "Administrace – Dashboard";
-    let meta = document.querySelector('meta[name="robots"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.setAttribute("name", "robots");
-      document.head.appendChild(meta);
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) {
+      robots = document.createElement("meta");
+      robots.setAttribute("name", "robots");
+      document.head.appendChild(robots);
     }
-    meta.setAttribute("content", "noindex, nofollow");
+    robots.setAttribute("content", "noindex, nofollow");
+
+    let desc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (!desc) {
+      desc = document.createElement("meta");
+      desc.setAttribute("name", "description");
+      document.head.appendChild(desc);
+    }
+    desc.setAttribute("content", "Administrační rozhraní pro úpravu aktualit a prodejních akcí.");
+
+    let link = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement("link");
+      link.setAttribute("rel", "canonical");
+      document.head.appendChild(link);
+    }
+    link.setAttribute("href", window.location.href);
   }, []);
 
   useEffect(() => {
-    // Load current public JSONs for convenience
-    fetch("/content/news.json").then(async (r) => {
-      if (r.ok) setNewsJSON(await r.text());
-    }).catch(() => {});
-    fetch("/content/promotions.json").then(async (r) => {
-      if (r.ok) setPromosJSON(await r.text());
-    }).catch(() => {});
+    // Načíst aktuální veřejné JSONy pro pohodlný start
+    fetch("/content/news.json")
+      .then(async (r) => {
+        if (!r.ok) return;
+        const data = await r.json();
+        if (Array.isArray(data)) setNews(data as NewsItem[]);
+      })
+      .catch(() => {});
+    fetch("/content/promotions.json")
+      .then(async (r) => {
+        if (!r.ok) return;
+        const data = await r.json();
+        if (Array.isArray(data)) setPromos(data as Promotion[]);
+      })
+      .catch(() => {});
   }, []);
 
   const saveToken = () => {
@@ -90,10 +284,8 @@ export default function AdminDashboard() {
         toast({ title: "Doplňte nastavení repozitáře a token", variant: "destructive" });
         return;
       }
-      const raw = which === "news" ? newsJSON : promosJSON;
-      // Validate JSON
-      const parsed = JSON.parse(raw);
-      const pretty = JSON.stringify(parsed, null, 2);
+      const data = which === "news" ? news : promos;
+      const pretty = JSON.stringify(data, null, 2);
       const path = which === "news" ? "public/content/news.json" : "public/content/promotions.json";
       await upsertFile(path, pretty + "\n", `chore(content): update ${which}`, cfg);
       toast({ title: "Uloženo do GitHubu" });
@@ -152,11 +344,105 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle>Aktuality (news.json)</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <Textarea className="min-h-64" value={newsJSON} onChange={(e) => setNewsJSON(e.target.value)} />
-            <div className="flex gap-2">
-              <Button onClick={() => saveJSON("news")}>Uložit</Button>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Button onClick={() => { setEditingNewsIndex(null); setNewsDialogOpen(true); }}>
+                <Plus className="mr-2 h-4 w-4" /> Přidat aktualitu
+              </Button>
+              <Button variant="secondary" onClick={() => saveJSON("news")}>Uložit do GitHubu</Button>
             </div>
+            <ul className="divide-y">
+              {news.length === 0 && (
+                <li className="text-sm text-muted-foreground py-6">Zatím žádné aktuality.</li>
+              )}
+              {news.map((n, i) => (
+                <li key={n.id || i} className="py-3 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-medium">{n.title}</p>
+                    <p className="text-xs text-muted-foreground">{n.date}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="secondary" size="sm" onClick={() => { setEditingNewsIndex(i); setNewsDialogOpen(true); }}>
+                      <Pencil className="h-4 w-4 mr-1" /> Upravit
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => deleteNews(i)}>
+                      <Trash2 className="h-4 w-4 mr-1" /> Smazat
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <Dialog open={newsDialogOpen} onOpenChange={setNewsDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editingNewsIndex != null ? "Upravit aktualitu" : "Přidat aktualitu"}</DialogTitle>
+                </DialogHeader>
+                <Form {...newsForm}>
+                  <form onSubmit={newsForm.handleSubmit(onSubmitNews)} className="space-y-4">
+                    <FormField name="title" control={newsForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nadpis</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Např. Nový sortiment" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="date" control={newsForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Datum</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="summary" control={newsForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Perex</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Krátký popis" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="body" control={newsForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Text</FormLabel>
+                        <FormControl>
+                          <Textarea className="min-h-32" placeholder="Plný text aktuality" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="imageUrl" control={newsForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Obrázek (URL)</FormLabel>
+                        <FormControl>
+                          <Input type="url" placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="link" control={newsForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Odkaz (URL)</FormLabel>
+                        <FormControl>
+                          <Input type="url" placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+
+                    <DialogFooter>
+                      <Button type="button" variant="secondary" onClick={() => setNewsDialogOpen(false)}>Zavřít</Button>
+                      <Button type="submit">Uložit</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 
@@ -164,11 +450,115 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle>Prodejní akce (promotions.json)</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <Textarea className="min-h-64" value={promosJSON} onChange={(e) => setPromosJSON(e.target.value)} />
-            <div className="flex gap-2">
-              <Button onClick={() => saveJSON("promos")}>Uložit</Button>
+          <CardContent className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Button onClick={() => { setEditingPromoIndex(null); setPromoDialogOpen(true); }}>
+                <Plus className="mr-2 h-4 w-4" /> Přidat akci
+              </Button>
+              <Button variant="secondary" onClick={() => saveJSON("promos")}>Uložit do GitHubu</Button>
             </div>
+            <ul className="divide-y">
+              {promos.length === 0 && (
+                <li className="text-sm text-muted-foreground py-6">Zatím žádné akce.</li>
+              )}
+              {promos.map((p, i) => (
+                <li key={p.id || i} className="py-3 flex items-center justify-between gap-4">
+                  <div>
+                    <p className="font-medium">{p.title}</p>
+                    <p className="text-xs text-muted-foreground">{p.price ? `Cena: ${p.price}` : ""} {p.validUntil ? `• Platí do: ${p.validUntil}` : ""}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="secondary" size="sm" onClick={() => { setEditingPromoIndex(i); setPromoDialogOpen(true); }}>
+                      <Pencil className="h-4 w-4 mr-1" /> Upravit
+                    </Button>
+                    <Button variant="destructive" size="sm" onClick={() => deletePromo(i)}>
+                      <Trash2 className="h-4 w-4 mr-1" /> Smazat
+                    </Button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+
+            <Dialog open={promoDialogOpen} onOpenChange={setPromoDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{editingPromoIndex != null ? "Upravit akci" : "Přidat akci"}</DialogTitle>
+                </DialogHeader>
+                <Form {...promoForm}>
+                  <form onSubmit={promoForm.handleSubmit(onSubmitPromo)} className="space-y-4">
+                    <FormField name="title" control={promoForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Název</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Např. Sleva 20%" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="description" control={promoForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Popis</FormLabel>
+                        <FormControl>
+                          <Textarea className="min-h-32" placeholder="Popis akce" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField name="price" control={promoForm.control} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Cena / od</FormLabel>
+                          <FormControl>
+                            <Input placeholder="např. od 3 990 Kč" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField name="validUntil" control={promoForm.control} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Platí do</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <FormField name="imageUrl" control={promoForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Obrázek (URL)</FormLabel>
+                        <FormControl>
+                          <Input type="url" placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="link" control={promoForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Odkaz (URL)</FormLabel>
+                        <FormControl>
+                          <Input type="url" placeholder="https://..." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <FormField name="tags" control={promoForm.control} render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Štítky (oddělené čárkou)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="např. robot, sekačka" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )} />
+                    <DialogFooter>
+                      <Button type="button" variant="secondary" onClick={() => setPromoDialogOpen(false)}>Zavřít</Button>
+                      <Button type="submit">Uložit</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
       </section>

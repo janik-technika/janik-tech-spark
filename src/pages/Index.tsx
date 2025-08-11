@@ -364,6 +364,7 @@ const Index = () => {
             <a href="#" className="hover:underline">Facebook</a>
             <a href="#" className="hover:underline">Instagram</a>
             <a href="#kontakt" className="hover:underline">Kontakt</a>
+            <a href="/admin" className="hover:underline">Administrace</a>
           </nav>
         </div>
       </footer>

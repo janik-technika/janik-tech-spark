@@ -242,12 +242,14 @@ export default function AdminDashboard() {
       imageUrl: values.imageUrl || undefined,
       link: values.link || undefined,
     };
-    setNews((prev) => {
-      const next = [...prev];
-      if (editingNewsIndex != null) next[editingNewsIndex] = newItem;
-      else next.unshift(newItem);
-      return next;
-    });
+    const next = (() => {
+      const arr = [...news];
+      if (editingNewsIndex != null) arr[editingNewsIndex] = newItem;
+      else arr.unshift(newItem);
+      return arr;
+    })();
+    setNews(next);
+    saveJSON("news", next as any);
     setNewsDialogOpen(false);
     setEditingNewsIndex(null);
     toast({ title: editingNewsIndex != null ? "Aktualita upravena" : "Aktualita přidána" });
@@ -267,12 +269,14 @@ export default function AdminDashboard() {
         .map((t) => t.trim())
         .filter(Boolean),
     };
-    setPromos((prev) => {
-      const next = [...prev];
-      if (editingPromoIndex != null) next[editingPromoIndex] = newItem;
-      else next.unshift(newItem);
-      return next;
-    });
+    const next = (() => {
+      const arr = [...promos];
+      if (editingPromoIndex != null) arr[editingPromoIndex] = newItem;
+      else arr.unshift(newItem);
+      return arr;
+    })();
+    setPromos(next);
+    saveJSON("promos", next as any);
     setPromoDialogOpen(false);
     setEditingPromoIndex(null);
     toast({ title: editingPromoIndex != null ? "Akce upravena" : "Akce přidána" });
@@ -280,12 +284,16 @@ export default function AdminDashboard() {
 
   const deleteNews = (idx: number) => {
     if (!confirm("Opravdu smazat tuto aktualitu?")) return;
-    setNews((prev) => prev.filter((_, i) => i !== idx));
+    const next = news.filter((_, i) => i !== idx);
+    setNews(next);
+    saveJSON("news", next as any);
   };
 
   const deletePromo = (idx: number) => {
     if (!confirm("Opravdu smazat tuto akci?")) return;
-    setPromos((prev) => prev.filter((_, i) => i !== idx));
+    const next = promos.filter((_, i) => i !== idx);
+    setPromos(next);
+    saveJSON("promos", next as any);
   };
 
   const token = useMemo(() => {
@@ -362,13 +370,13 @@ export default function AdminDashboard() {
     return { owner, repo, branch, token: pat };
   }, [owner, repo, branch, pat]);
 
-  const saveJSON = async (which: "news" | "promos") => {
+  const saveJSON = async (which: "news" | "promos", dataOverride?: Array<NewsItem | Promotion>) => {
     try {
       if (!cfg) {
         toast({ title: "Doplňte nastavení repozitáře a token", variant: "destructive" });
         return;
       }
-      const data = which === "news" ? news : promos;
+      const data = (dataOverride as any) ?? (which === "news" ? news : promos);
       const pretty = JSON.stringify(data, null, 2);
       const path = which === "news" ? "public/content/news.json" : "public/content/promotions.json";
       await upsertFile(path, pretty + "\n", `chore(content): update ${which}`, cfg);
@@ -429,11 +437,10 @@ export default function AdminDashboard() {
             <CardTitle>Aktuality (news.json)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-start items-center">
               <Button onClick={() => { setEditingNewsIndex(null); setNewsDialogOpen(true); }}>
                 <Plus className="mr-2 h-4 w-4" /> Přidat aktualitu
               </Button>
-              <Button variant="secondary" onClick={() => saveJSON("news")}>Uložit do GitHubu</Button>
             </div>
             <ul className="divide-y">
               {news.length === 0 && (
@@ -542,11 +549,10 @@ export default function AdminDashboard() {
             <CardTitle>Prodejní akce (promotions.json)</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-start items-center">
               <Button onClick={() => { setEditingPromoIndex(null); setPromoDialogOpen(true); }}>
                 <Plus className="mr-2 h-4 w-4" /> Přidat akci
               </Button>
-              <Button variant="secondary" onClick={() => saveJSON("promos")}>Uložit do GitHubu</Button>
             </div>
             <ul className="divide-y">
               {promos.length === 0 && (

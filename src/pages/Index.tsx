@@ -3,11 +3,21 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ShieldCheck, Award, CheckCircle2, Wrench, Truck, GraduationCap } from "lucide-react";
 
 import heroImage from "@/assets/janik-hero.jpg";
-import stihlLogo from "@/assets/brand-stihl.svg";
-import stigaLogo from "@/assets/brand-stiga.svg";
-import makitaLogo from "@/assets/brand-makita.svg";
-import fiskarsLogo from "@/assets/brand-fiskars.svg";
-import dakrLogo from "@/assets/logo-dakr.jpg";
+const BRAND_LOGOS = {
+  STIHL: "/lovable-uploads/d0f7fbfe-0589-4109-8a4b-be0d27769063.png",
+  STIGA: "/lovable-uploads/b306d60a-e713-429d-a0fe-770995392933.png",
+  MAKITA: "/lovable-uploads/6d09367f-2cbc-4a50-9c68-a4fd948ec499.png",
+  FISKARS: "/lovable-uploads/6454d1d6-fa23-4363-9193-6de3850a2f6c.png",
+  DAKR: "/lovable-uploads/74e4adf1-bdc6-4814-a750-9878dcf94f61.png",
+} as const;
+
+const brands = [
+  { name: 'STIHL', img: BRAND_LOGOS.STIHL },
+  { name: 'STIGA', img: BRAND_LOGOS.STIGA },
+  { name: 'MAKITA', img: BRAND_LOGOS.MAKITA },
+  { name: 'FISKARS', img: BRAND_LOGOS.FISKARS },
+  { name: 'DAKR', img: BRAND_LOGOS.DAKR },
+] as const;
 
 import promoStiga from "@/assets/promo-stiga-robot.jpg";
 import promoMakita from "@/assets/promo-makita-dlm533.jpg";
@@ -130,15 +140,9 @@ const Index = () => {
             <p className="text-muted-foreground">Kliknutím na logo zobrazíte přehled výrobků.</p>
           </header>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {[
-              { name: 'STIHL', img: stihlLogo },
-              { name: 'STIGA', img: stigaLogo },
-              { name: 'MAKITA', img: makitaLogo },
-              { name: 'FISKARS', img: fiskarsLogo },
-              { name: 'DAKR', img: dakrLogo },
-            ].map((b) => (
+            {brands.map((b) => (
               <a key={b.name} href="#" className="glass rounded-xl p-4 flex flex-col items-center gap-3 hover-scale">
-                <img src={b.img} alt={`${b.name} logo`} loading="lazy" decoding="async" className="w-full h-24 object-contain" />
+                <img src={b.img} alt={`${b.name} logo`} loading="lazy" decoding="async" className="h-16 md:h-20 w-full object-contain" />
                 <div className="text-center">
                   <h3 className="font-semibold">{b.name}</h3>
                   <p className="text-xs text-muted-foreground">PRO PŘEHLED VÝROBKŮ KLIKNI NA LOGO</p>
@@ -270,8 +274,8 @@ const Index = () => {
             <h2 id="partneri-title" className="text-3xl md:text-4xl font-bold tracking-tight">Naši partneři</h2>
           </header>
           <div className="glass rounded-xl p-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 items-center">
-            {[stihlLogo, stigaLogo, dakrLogo, fiskarsLogo, makitaLogo].map((src, i) => (
-              <img key={i} src={src} alt="Logo partnera" loading="lazy" decoding="async" className="h-12 w-full object-contain opacity-90 hover:opacity-100 transition-opacity" />
+            {brands.map((b) => (
+              <img key={b.name} src={b.img} alt={`${b.name} logo`} loading="lazy" decoding="async" className="h-16 md:h-20 w-full object-contain opacity-90 hover:opacity-100 transition-opacity" />
             ))}
           </div>
         </section>

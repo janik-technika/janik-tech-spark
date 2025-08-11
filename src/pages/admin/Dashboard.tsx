@@ -138,9 +138,9 @@ export default function AdminDashboard() {
       throw new Error(`GitHub upload failed ${res.status}: ${t}`);
     }
 
-    // Build relative URL served from /public
-    const relativeUrl = '/' + path.replace(/^public\//, '');
-    return relativeUrl;
+    // Build RAW GitHub URL so images work immediately without redeploy
+    const rawUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}`;
+    return rawUrl;
   };
 
   // Handlers for file selection

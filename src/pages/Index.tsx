@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ShieldCheck, Award, CheckCircle2, Wrench, Truck, GraduationCap } from "lucide-react";
 
-import heroImage from "@/assets/janik-hero.jpg";
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 const BRAND_LOGOS = {
   STIHL: "/lovable-uploads/d0f7fbfe-0589-4109-8a4b-be0d27769063.png",
   STIGA: "/lovable-uploads/b306d60a-e713-429d-a0fe-770995392933.png",
@@ -17,6 +17,13 @@ const brands = [
   { name: 'MAKITA', img: BRAND_LOGOS.MAKITA },
   { name: 'FISKARS', img: BRAND_LOGOS.FISKARS },
   { name: 'DAKR', img: BRAND_LOGOS.DAKR },
+] as const;
+
+const heroSlides = [
+  "/lovable-uploads/248ef94c-a04c-4eb5-8628-4b240bc5586f.png",
+  "/lovable-uploads/ec6e85c9-6867-4261-9e2d-43c071b02fee.png",
+  "/lovable-uploads/22b6bf5e-f2d6-4aa8-b66c-0e70609f6d0f.png",
+  "/lovable-uploads/5fe373a9-cdd3-4c1a-8472-c1c688c42518.png",
 ] as const;
 
 import promoStiga from "@/assets/promo-stiga-robot.jpg";
@@ -40,7 +47,17 @@ const navItems = [
 
 const Index = () => {
   const [open, setOpen] = useState(false);
+  const [heroApi, setHeroApi] = useState<CarouselApi | null>(null);
   const gallery = [g1, g2, g3, g4, g5, g6, g1, g2, g3, g4, g5, g6];
+
+  useEffect(() => {
+    if (!heroApi) return;
+    const id = setInterval(() => {
+      if (heroApi.canScrollNext()) heroApi.scrollNext();
+      else heroApi.scrollTo(0);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [heroApi]);
 
   return (
     <div>
@@ -84,7 +101,26 @@ const Index = () => {
       </header>
 
       {/* Hero */}
-      <section id="hero" aria-label="JANÍK – hero" className="relative min-h-[88vh] w-full flex items-center overflow-hidden" style={{ backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <section id="hero" aria-label="JANÍK – hero" className="relative min-h-[88vh] w-full flex items-center overflow-hidden">
+        <div className="absolute inset-0">
+          <Carousel setApi={setHeroApi} opts={{ loop: true }} className="h-full">
+            <CarouselContent className="h-full">
+              {heroSlides.map((src, i) => (
+                <CarouselItem key={i} className="h-full">
+                  <div className="h-[88vh] w-full">
+                    <img
+                      src={src}
+                      alt={`Hero slide ${i + 1} – prodejna a sortiment zahradní a lesní techniky`}
+                      loading={i === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+          </Carousel>
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/60 to-background/30" />
         <div className="container relative z-10 pt-28 pb-16">
           <h1 id="main" className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight max-w-4xl animate-enter">

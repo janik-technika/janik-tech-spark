@@ -79,8 +79,8 @@ function useStoredState<T>(key: string, initial: T) {
 
 export default function AdminDashboard() {
   const { toast } = useToast();
-  const [owner, setOwner] = useStoredState("gh_owner", "");
-  const [repo, setRepo] = useStoredState("gh_repo", "");
+  const [owner, setOwner] = useStoredState("gh_owner", "janik-technika");
+  const [repo, setRepo] = useStoredState("gh_repo", "janik-tech-spark");
   const [branch, setBranch] = useStoredState("gh_branch", "main");
   const [rememberToken, setRememberToken] = useStoredState("gh_remember", true);
   const [tokenInput, setTokenInput] = useState("");

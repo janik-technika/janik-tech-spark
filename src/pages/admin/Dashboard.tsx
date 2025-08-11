@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -92,6 +92,90 @@ export default function AdminDashboard() {
   const [editingNewsIndex, setEditingNewsIndex] = useState<number | null>(null);
   const [promoDialogOpen, setPromoDialogOpen] = useState(false);
   const [editingPromoIndex, setEditingPromoIndex] = useState<number | null>(null);
+
+  // File input refs
+  const newsFileInputRef = useRef<HTMLInputElement>(null);
+  const promoFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Helper: convert ArrayBuffer to base64
+  const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  };
+
+  // Upload image to GitHub and return public raw URL
+  const uploadImage = async (file: File, subdir: "news" | "promos"): Promise<string> => {
+    if (!cfg) throw new Error("Nejprve vyplňte GitHub nastavení a token.");
+    const ext = file.name.split(".").pop() || "bin";
+    const safeNamePart = file.name.replace(/[^a-zA-Z0-9-_]+/g, "").slice(0, 32) || "file";
+    const ts = Date.now();
+    const path = `public/content/uploads/${subdir}/${ts}-${safeNamePart}.${ext}`;
+    const buffer = await file.arrayBuffer();
+    const base64 = arrayBufferToBase64(buffer);
+    const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}`;
+
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Accept: "application/vnd.github+json",
+        Authorization: `Bearer ${cfg.token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: `chore(content): upload image ${file.name}`,
+        content: base64,
+        branch: cfg.branch,
+      }),
+    });
+
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`GitHub upload failed ${res.status}: ${t}`);
+    }
+
+    // Build raw URL
+    const rawUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}`;
+    return rawUrl;
+  };
+
+  // Handlers for file selection
+  const triggerNewsFile = () => newsFileInputRef.current?.click();
+  const triggerPromoFile = () => promoFileInputRef.current?.click();
+
+  const onNewsFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      toast({ title: "Nahrávám obrázek..." });
+      const url = await uploadImage(file, "news");
+      newsForm.setValue("imageUrl", url, { shouldValidate: true });
+      toast({ title: "Obrázek nahrán", description: "URL vyplněna automaticky." });
+    } catch (err: any) {
+      toast({ title: "Chyba nahrávání", description: String(err?.message || err), variant: "destructive" });
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const onPromoFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      toast({ title: "Nahrávám obrázek..." });
+      const url = await uploadImage(file, "promos");
+      promoForm.setValue("imageUrl", url, { shouldValidate: true });
+      toast({ title: "Obrázek nahrán", description: "URL vyplněna automaticky." });
+    } catch (err: any) {
+      toast({ title: "Chyba nahrávání", description: String(err?.message || err), variant: "destructive" });
+    } finally {
+      e.target.value = "";
+    }
+  };
 
   // Forms
   const newsForm = useForm<z.infer<typeof newsSchema>>({
@@ -418,10 +502,17 @@ export default function AdminDashboard() {
                     )} />
                     <FormField name="imageUrl" control={newsForm.control} render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Obrázek (URL)</FormLabel>
-                        <FormControl>
-                          <Input type="url" placeholder="https://..." {...field} />
-                        </FormControl>
+                        <FormLabel>Obrázek</FormLabel>
+                        <div className="flex items-center gap-2">
+                          <FormControl>
+                            <Input type="url" placeholder="https://..." {...field} />
+                          </FormControl>
+                          <input ref={newsFileInputRef} type="file" accept="image/*" className="hidden" onChange={onNewsFileChange} />
+                          <Button type="button" variant="secondary" onClick={triggerNewsFile}>Nahrát z PC</Button>
+                        </div>
+                        {field.value ? (
+                          <img src={field.value} alt="Náhled obrázku" className="mt-2 h-24 w-24 object-cover rounded-md" />
+                        ) : null}
                         <FormMessage />
                       </FormItem>
                     )} />
@@ -526,10 +617,17 @@ export default function AdminDashboard() {
                     </div>
                     <FormField name="imageUrl" control={promoForm.control} render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Obrázek (URL)</FormLabel>
-                        <FormControl>
-                          <Input type="url" placeholder="https://..." {...field} />
-                        </FormControl>
+                        <FormLabel>Obrázek</FormLabel>
+                        <div className="flex items-center gap-2">
+                          <FormControl>
+                            <Input type="url" placeholder="https://..." {...field} />
+                          </FormControl>
+                          <input ref={promoFileInputRef} type="file" accept="image/*" className="hidden" onChange={onPromoFileChange} />
+                          <Button type="button" variant="secondary" onClick={triggerPromoFile}>Nahrát z PC</Button>
+                        </div>
+                        {field.value ? (
+                          <img src={field.value} alt="Náhled obrázku" className="mt-2 h-24 w-24 object-cover rounded-md" />
+                        ) : null}
                         <FormMessage />
                       </FormItem>
                     )} />

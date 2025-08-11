@@ -27,8 +27,6 @@ const heroSlides = [
   "/lovable-uploads/5fe373a9-cdd3-4c1a-8472-c1c688c42518.png",
 ] as const;
 
-import promoStiga from "@/assets/promo-stiga-robot.jpg";
-import promoMakita from "@/assets/promo-makita-dlm533.jpg";
 
 import g1 from "@/assets/gallery-1.jpg";
 import g2 from "@/assets/gallery-2.jpg";
@@ -46,6 +44,17 @@ type NewsItem = {
   link?: string;
 };
 
+type Promotion = {
+  id?: string;
+  title: string;
+  description?: string;
+  price?: string;
+  validUntil?: string; // YYYY-MM-DD nebo text
+  imageUrl?: string;
+  link?: string;
+  tags?: string[];
+};
+
 const navItems = [
   { href: "#onas", label: "O nás" },
   { href: "#sortiment", label: "Sortiment" },
@@ -61,26 +70,37 @@ const Index = () => {
   const [heroApi, setHeroApi] = useState<CarouselApi | null>(null);
   const gallery = [g1, g2, g3, g4, g5, g6, g1, g2, g3, g4, g5, g6];
 
-  const [news, setNews] = useState<NewsItem[]>([]);
+const [news, setNews] = useState<NewsItem[]>([]);
+const [promotions, setPromotions] = useState<Promotion[]>([]);
 
-  useEffect(() => {
-    if (!heroApi) return;
-    const id = setInterval(() => {
-      if (heroApi.canScrollNext()) heroApi.scrollNext();
-      else heroApi.scrollTo(0);
-    }, 4000);
-    return () => clearInterval(id);
-  }, [heroApi]);
+useEffect(() => {
+  if (!heroApi) return;
+  const id = setInterval(() => {
+    if (heroApi.canScrollNext()) heroApi.scrollNext();
+    else heroApi.scrollTo(0);
+  }, 4000);
+  return () => clearInterval(id);
+}, [heroApi]);
 
-  useEffect(() => {
-    fetch("/content/news.json")
-      .then(async (r) => {
-        if (!r.ok) return;
-        const data = await r.json();
-        if (Array.isArray(data)) setNews(data as NewsItem[]);
-      })
-      .catch(() => {});
-  }, []);
+useEffect(() => {
+  fetch("/content/news.json")
+    .then(async (r) => {
+      if (!r.ok) return;
+      const data = await r.json();
+      if (Array.isArray(data)) setNews(data as NewsItem[]);
+    })
+    .catch(() => {});
+}, []);
+
+useEffect(() => {
+  fetch("/content/promotions.json")
+    .then(async (r) => {
+      if (!r.ok) return;
+      const data = await r.json();
+      if (Array.isArray(data)) setPromotions(data as Promotion[]);
+    })
+    .catch(() => {});
+}, []);
 
 
   return (
@@ -242,38 +262,44 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Prodejní akce */}
-        <section id="akce" aria-labelledby="akce-title">
-          <header className="mb-8">
-            <h2 id="akce-title" className="text-3xl md:text-4xl font-bold tracking-tight">Prodejní akce</h2>
-            <p className="text-muted-foreground">Aktuální zvýhodněné nabídky. Nepropásněte výhodný nákup.</p>
-          </header>
-          <div className="grid md:grid-cols-2 gap-6">
-            <article className="glass rounded-xl overflow-hidden">
-              <img src={promoStiga} alt="STIGA robotické sekačky – ilustrační foto" loading="lazy" decoding="async" className="w-full h-56 object-cover" />
-              <div className="p-5 space-y-2">
-                <h3 className="text-xl font-semibold">STIGA robotické sekačky</h3>
-                <p className="text-sm text-muted-foreground">Chytré sečení bez námahy. Tichý provoz, precizní výsledek – ideální pro moderní zahrady.</p>
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-primary font-bold">SLEVA až 15 %</span>
-                  <span className="text-xs text-muted-foreground">Platnost: 1. 4. – 30. 6. 2025</span>
-                </div>
-              </div>
-            </article>
-
-            <article className="glass rounded-xl overflow-hidden">
-              <img src={promoMakita} alt="MAKITA DLM533ZX2 – ilustrační foto" loading="lazy" decoding="async" className="w-full h-56 object-cover" />
-              <div className="p-5 space-y-2">
-                <h3 className="text-xl font-semibold">MAKITA DLM533ZX2</h3>
-                <p className="text-sm text-muted-foreground">Profesionální aku sekačka s vysokým výkonem a dlouhou výdrží. Ideální pro náročné uživatele.</p>
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-primary font-bold">Akční cena již od 16 990 Kč</span>
-                  <span className="text-xs text-muted-foreground">Platnost: do vyprodání zásob</span>
-                </div>
-              </div>
-            </article>
+{/* Prodejní akce */}
+<section id="akce" aria-labelledby="akce-title">
+  <header className="mb-8">
+    <h2 id="akce-title" className="text-3xl md:text-4xl font-bold tracking-tight">Prodejní akce</h2>
+    <p className="text-muted-foreground">Aktuální zvýhodněné nabídky. Nepropásněte výhodný nákup.</p>
+  </header>
+  <div className="grid md:grid-cols-2 gap-6">
+    {promotions.length === 0 && (
+      <p className="text-sm text-muted-foreground">Zatím žádné akce.</p>
+    )}
+    {promotions.map((p, i) => (
+      <article key={p.id || i} className="glass rounded-xl overflow-hidden">
+        {p.imageUrl ? (
+          <img
+            src={p.imageUrl}
+            alt={`Prodejní akce – ${p.title}`}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-56 object-cover"
+          />
+        ) : null}
+        <div className="p-5 space-y-2">
+          <h3 className="text-xl font-semibold">{p.title}</h3>
+          {p.description && <p className="text-sm text-muted-foreground">{p.description}</p>}
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-primary font-bold">{p.price || ""}</span>
+            <span className="text-xs text-muted-foreground">{p.validUntil ? `Platnost: ${p.validUntil}` : ""}</span>
           </div>
-        </section>
+          {p.link && (
+            <a href={p.link} target="_blank" rel="noreferrer">
+              <Button variant="glass" size="sm">Více</Button>
+            </a>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
 
         {/* Služby */}
         <section id="sluzby" aria-labelledby="sluzby-title">

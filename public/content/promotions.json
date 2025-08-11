@@ -1,0 +1,21 @@
+
+[
+  {
+    "id": "makita-dlm533",
+    "title": "MAKITA DLM533 - Akumulátorová sekačka",
+    "description": "Výkonná akumulátorová sekačka s možností mulčování. Ideální pro střední až větší zahrady. V ceně 2x akumulátor 18V 5.0Ah + nabíječka.",
+    "price": "od 19 990 Kč",
+    "validUntil": "2025-03-31",
+    "imageUrl": "/assets/promo-makita-dlm533.jpg",
+    "tags": ["sekačka", "akumulátor", "MAKITA"]
+  },
+  {
+    "id": "stiga-robot",
+    "title": "STIGA Robotické sekačky - jarní akce",
+    "description": "Kompletní sortiment robotických sekaček STIGA za akční ceny. Včetně instalace a uvedení do provozu zdarma.",
+    "price": "od 24 990 Kč",
+    "validUntil": "2025-04-30",
+    "imageUrl": "/assets/promo-stiga-robot.jpg",
+    "tags": ["robot", "sekačka", "STIGA", "instalace"]
+  }
+]

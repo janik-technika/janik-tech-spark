@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ShieldCheck, Award, CheckCircle2, Wrench, Truck, GraduationCap } from "lucide-react";
 
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
+import Map from "@/components/Map";
 const BRAND_LOGOS = {
   STIHL: "/lovable-uploads/d0f7fbfe-0589-4109-8a4b-be0d27769063.png",
   STIGA: "/lovable-uploads/b306d60a-e713-429d-a0fe-770995392933.png",
@@ -349,6 +350,9 @@ const Index = () => {
               <a href="tel:+420606806021"><Button variant="hero">Zavolat</Button></a>
               <a href="mailto:janik.stihl@gmail.com"><Button variant="glass">Napsat e‑mail</Button></a>
             </div>
+          </div>
+          <div className="mt-6">
+            <Map address="Tylovice 1828, Rožnov pod Radhoštěm" />
           </div>
         </section>
       </main>

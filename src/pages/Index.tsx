@@ -37,9 +37,19 @@ import g4 from "@/assets/gallery-4.jpg";
 import g5 from "@/assets/gallery-5.jpg";
 import g6 from "@/assets/gallery-6.jpg";
 
+type NewsItem = {
+  id?: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  summary?: string;
+  imageUrl?: string;
+  link?: string;
+};
+
 const navItems = [
   { href: "#onas", label: "O nás" },
   { href: "#sortiment", label: "Sortiment" },
+  { href: "#aktuality", label: "Aktuality" },
   { href: "#akce", label: "Prodejní akce" },
   { href: "#sluzby", label: "Služby" },
   { href: "#prodejna", label: "Prodejna" },
@@ -51,6 +61,8 @@ const Index = () => {
   const [heroApi, setHeroApi] = useState<CarouselApi | null>(null);
   const gallery = [g1, g2, g3, g4, g5, g6, g1, g2, g3, g4, g5, g6];
 
+  const [news, setNews] = useState<NewsItem[]>([]);
+
   useEffect(() => {
     if (!heroApi) return;
     const id = setInterval(() => {
@@ -59,6 +71,17 @@ const Index = () => {
     }, 4000);
     return () => clearInterval(id);
   }, [heroApi]);
+
+  useEffect(() => {
+    fetch("/content/news.json")
+      .then(async (r) => {
+        if (!r.ok) return;
+        const data = await r.json();
+        if (Array.isArray(data)) setNews(data as NewsItem[]);
+      })
+      .catch(() => {});
+  }, []);
+
 
   return (
     <div>
@@ -185,6 +208,36 @@ const Index = () => {
                   <p className="text-xs text-muted-foreground">PRO PŘEHLED VÝROBKŮ KLIKNI NA LOGO</p>
                 </div>
               </a>
+            ))}
+          </div>
+        </section>
+
+        {/* Aktuality */}
+        <section id="aktuality" aria-labelledby="aktuality-title">
+          <header className="mb-8">
+            <h2 id="aktuality-title" className="text-3xl md:text-4xl font-bold tracking-tight">Aktuality</h2>
+            <p className="text-muted-foreground">Novinky a důležité informace pro naše zákazníky.</p>
+          </header>
+          <div className="grid md:grid-cols-2 gap-6">
+            {news.length === 0 && (
+              <p className="text-sm text-muted-foreground">Zatím žádné aktuality.</p>
+            )}
+            {news.map((n, i) => (
+              <article key={n.id || i} className="glass rounded-xl overflow-hidden">
+                {n.imageUrl ? (
+                  <img src={n.imageUrl} alt={`Aktualita – ${n.title}`} loading="lazy" decoding="async" className="w-full h-48 object-cover" />
+                ) : null}
+                <div className="p-5 space-y-2">
+                  <h3 className="text-xl font-semibold">{n.title}</h3>
+                  <p className="text-xs text-muted-foreground">{n.date}</p>
+                  {n.summary && <p className="text-sm text-muted-foreground">{n.summary}</p>}
+                  {n.link && (
+                    <a href={n.link} target="_blank" rel="noreferrer">
+                      <Button variant="glass" size="sm">Více</Button>
+                    </a>
+                  )}
+                </div>
+              </article>
             ))}
           </div>
         </section>

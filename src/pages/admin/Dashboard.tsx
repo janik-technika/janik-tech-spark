@@ -41,7 +41,7 @@ const newsSchema = z.object({
   date: z.string().min(1, "Zadejte datum"),
   summary: z.string().optional(),
   body: z.string().optional(),
-  imageUrl: z.string().url("Musí být platná URL").optional().or(z.literal("")),
+  imageUrl: z.string().optional().refine((v) => !v || /^https?:\/\//.test(v) || /^\//.test(v), "Musí být platná URL nebo cesta od kořene (/...)") ,
   link: z.string().url("Musí být platná URL").optional().or(z.literal("")),
 });
 
@@ -51,7 +51,7 @@ const promoSchema = z.object({
   description: z.string().optional(),
   price: z.string().optional(),
   validUntil: z.string().optional(),
-  imageUrl: z.string().url("Musí být platná URL").optional().or(z.literal("")),
+  imageUrl: z.string().optional().refine((v) => !v || /^https?:\/\//.test(v) || /^\//.test(v), "Musí být platná URL nebo cesta od kořene (/...)") ,
   link: z.string().url("Musí být platná URL").optional().or(z.literal("")),
   tags: z.string().optional(), // comma-separated in form
 });
@@ -138,9 +138,9 @@ export default function AdminDashboard() {
       throw new Error(`GitHub upload failed ${res.status}: ${t}`);
     }
 
-    // Build raw URL
-    const rawUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch}/${path}`;
-    return rawUrl;
+    // Build relative URL served from /public
+    const relativeUrl = '/' + path.replace(/^public\//, '');
+    return relativeUrl;
   };
 
   // Handlers for file selection
@@ -505,7 +505,7 @@ export default function AdminDashboard() {
                         <FormLabel>Obrázek</FormLabel>
                         <div className="flex items-center gap-2">
                           <FormControl>
-                            <Input type="url" placeholder="https://..." {...field} />
+                            <Input type="text" placeholder="https://... nebo /content/..." {...field} />
                           </FormControl>
                           <input ref={newsFileInputRef} type="file" accept="image/*" className="hidden" onChange={onNewsFileChange} />
                           <Button type="button" variant="secondary" onClick={triggerNewsFile}>Nahrát z PC</Button>
@@ -620,7 +620,7 @@ export default function AdminDashboard() {
                         <FormLabel>Obrázek</FormLabel>
                         <div className="flex items-center gap-2">
                           <FormControl>
-                            <Input type="url" placeholder="https://..." {...field} />
+                            <Input type="text" placeholder="https://... nebo /content/..." {...field} />
                           </FormControl>
                           <input ref={promoFileInputRef} type="file" accept="image/*" className="hidden" onChange={onPromoFileChange} />
                           <Button type="button" variant="secondary" onClick={triggerPromoFile}>Nahrát z PC</Button>

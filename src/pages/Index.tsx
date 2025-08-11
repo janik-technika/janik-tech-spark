@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, ShieldCheck, Award, CheckCircle2, Wrench, Truck, GraduationCap } from "lucide-react";
 
 import heroImage from "@/assets/janik-hero.jpg";
-import stihlLogo from "@/assets/logo-stihl.jpg";
-import stigaLogo from "@/assets/logo-stiga.jpg";
-import makitaLogo from "@/assets/logo-makita.jpg";
-import fiskarsLogo from "@/assets/logo-fiskars.jpg";
+import stihlLogo from "@/assets/brand-stihl.svg";
+import stigaLogo from "@/assets/brand-stiga.svg";
+import makitaLogo from "@/assets/brand-makita.svg";
+import fiskarsLogo from "@/assets/brand-fiskars.svg";
 import dakrLogo from "@/assets/logo-dakr.jpg";
 
 import promoStiga from "@/assets/promo-stiga-robot.jpg";
@@ -138,7 +138,7 @@ const Index = () => {
               { name: 'DAKR', img: dakrLogo },
             ].map((b) => (
               <a key={b.name} href="#" className="glass rounded-xl p-4 flex flex-col items-center gap-3 hover-scale">
-                <img src={b.img} alt={`${b.name} logo placeholder`} loading="lazy" decoding="async" className="w-full h-24 object-contain" />
+                <img src={b.img} alt={`${b.name} logo`} loading="lazy" decoding="async" className="w-full h-24 object-contain" />
                 <div className="text-center">
                   <h3 className="font-semibold">{b.name}</h3>
                   <p className="text-xs text-muted-foreground">PRO PŘEHLED VÝROBKŮ KLIKNI NA LOGO</p>

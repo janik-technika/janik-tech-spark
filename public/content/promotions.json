@@ -1,13 +1,16 @@
-
 [
   {
-    "id": "makita-dlm533",
+    "id": "wrqbp6kdbxame78uovc",
     "title": "MAKITA DLM533 - Akumulátorová sekačka",
     "description": "Výkonná akumulátorová sekačka s možností mulčování. Ideální pro střední až větší zahrady. V ceně 2x akumulátor 18V 5.0Ah + nabíječka.",
     "price": "od 19 990 Kč",
     "validUntil": "2025-03-31",
-    "imageUrl": "/assets/promo-makita-dlm533.jpg",
-    "tags": ["sekačka", "akumulátor", "MAKITA"]
+    "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1754924693680-EMavif.avif",
+    "tags": [
+      "sekačka",
+      "akumulátor",
+      "MAKITA"
+    ]
   },
   {
     "id": "stiga-robot",
@@ -16,6 +19,11 @@
     "price": "od 24 990 Kč",
     "validUntil": "2025-04-30",
     "imageUrl": "/assets/promo-stiga-robot.jpg",
-    "tags": ["robot", "sekačka", "STIGA", "instalace"]
+    "tags": [
+      "robot",
+      "sekačka",
+      "STIGA",
+      "instalace"
+    ]
   }
 ]

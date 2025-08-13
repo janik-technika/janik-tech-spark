@@ -21,6 +21,7 @@ export type Promotion = {
   price?: string;
   validUntil?: string; // YYYY-MM-DD
   imageUrl?: string;
+  pdfUrl?: string;
   link?: string;
   tags?: string[];
 };
@@ -32,6 +33,7 @@ export type NewsItem = {
   summary?: string;
   body?: string;
   imageUrl?: string;
+  pdfUrl?: string;
   link?: string;
 };
 
@@ -42,6 +44,7 @@ const newsSchema = z.object({
   summary: z.string().optional(),
   body: z.string().optional(),
   imageUrl: z.string().optional().refine((v) => !v || /^https?:\/\//.test(v) || /^\//.test(v), "Musí být platná URL nebo cesta od kořene (/...)") ,
+  pdfUrl: z.string().optional().refine((v) => !v || /^https?:\/\//.test(v) || /^\//.test(v), "Musí být platná URL nebo cesta od kořene (/...)") ,
   link: z.string().url("Musí být platná URL").optional().or(z.literal("")),
 });
 
@@ -52,6 +55,7 @@ const promoSchema = z.object({
   price: z.string().optional(),
   validUntil: z.string().optional(),
   imageUrl: z.string().optional().refine((v) => !v || /^https?:\/\//.test(v) || /^\//.test(v), "Musí být platná URL nebo cesta od kořene (/...)") ,
+  pdfUrl: z.string().optional().refine((v) => !v || /^https?:\/\//.test(v) || /^\//.test(v), "Musí být platná URL nebo cesta od kořene (/...)") ,
   link: z.string().url("Musí být platná URL").optional().or(z.literal("")),
   tags: z.string().optional(), // comma-separated in form
 });
@@ -96,6 +100,8 @@ export default function AdminDashboard() {
   // File input refs
   const newsFileInputRef = useRef<HTMLInputElement>(null);
   const promoFileInputRef = useRef<HTMLInputElement>(null);
+  const newsPdfInputRef = useRef<HTMLInputElement>(null);
+  const promoPdfInputRef = useRef<HTMLInputElement>(null);
 
   // Helper: convert ArrayBuffer to base64
   const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
@@ -108,8 +114,8 @@ export default function AdminDashboard() {
     return btoa(binary);
   };
 
-  // Upload image to GitHub and return public raw URL
-  const uploadImage = async (file: File, subdir: "news" | "promos"): Promise<string> => {
+  // Upload file to GitHub and return public raw URL
+  const uploadFile = async (file: File, subdir: "news" | "promos"): Promise<string> => {
     if (!cfg) throw new Error("Nejprve vyplňte GitHub nastavení a token.");
     const ext = file.name.split(".").pop() || "bin";
     const safeNamePart = file.name.replace(/[^a-zA-Z0-9-_]+/g, "").slice(0, 32) || "file";
@@ -127,7 +133,7 @@ export default function AdminDashboard() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        message: `chore(content): upload image ${file.name}`,
+        message: `chore(content): upload file ${file.name}`,
         content: base64,
         branch: cfg.branch,
       }),
@@ -146,15 +152,32 @@ export default function AdminDashboard() {
   // Handlers for file selection
   const triggerNewsFile = () => newsFileInputRef.current?.click();
   const triggerPromoFile = () => promoFileInputRef.current?.click();
+  const triggerNewsPdf = () => newsPdfInputRef.current?.click();
+  const triggerPromoPdf = () => promoPdfInputRef.current?.click();
 
   const onNewsFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     try {
       toast({ title: "Nahrávám obrázek..." });
-      const url = await uploadImage(file, "news");
+      const url = await uploadFile(file, "news");
       newsForm.setValue("imageUrl", url, { shouldValidate: true });
       toast({ title: "Obrázek nahrán", description: "URL vyplněna automaticky." });
+    } catch (err: any) {
+      toast({ title: "Chyba nahrávání", description: String(err?.message || err), variant: "destructive" });
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const onNewsPdfChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      toast({ title: "Nahrávám PDF..." });
+      const url = await uploadFile(file, "news");
+      newsForm.setValue("pdfUrl", url, { shouldValidate: true });
+      toast({ title: "PDF nahráno", description: "URL vyplněna automaticky." });
     } catch (err: any) {
       toast({ title: "Chyba nahrávání", description: String(err?.message || err), variant: "destructive" });
     } finally {
@@ -167,9 +190,24 @@ export default function AdminDashboard() {
     if (!file) return;
     try {
       toast({ title: "Nahrávám obrázek..." });
-      const url = await uploadImage(file, "promos");
+      const url = await uploadFile(file, "promos");
       promoForm.setValue("imageUrl", url, { shouldValidate: true });
       toast({ title: "Obrázek nahrán", description: "URL vyplněna automaticky." });
+    } catch (err: any) {
+      toast({ title: "Chyba nahrávání", description: String(err?.message || err), variant: "destructive" });
+    } finally {
+      e.target.value = "";
+    }
+  };
+
+  const onPromoPdfChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      toast({ title: "Nahrávám PDF..." });
+      const url = await uploadFile(file, "promos");
+      promoForm.setValue("pdfUrl", url, { shouldValidate: true });
+      toast({ title: "PDF nahráno", description: "URL vyplněna automaticky." });
     } catch (err: any) {
       toast({ title: "Chyba nahrávání", description: String(err?.message || err), variant: "destructive" });
     } finally {
@@ -186,6 +224,7 @@ export default function AdminDashboard() {
       summary: "",
       body: "",
       imageUrl: "",
+      pdfUrl: "",
       link: "",
     },
   });
@@ -198,6 +237,7 @@ export default function AdminDashboard() {
       price: "",
       validUntil: "",
       imageUrl: "",
+      pdfUrl: "",
       link: "",
       tags: "",
     },
@@ -213,6 +253,7 @@ export default function AdminDashboard() {
       summary: item?.summary ?? "",
       body: item?.body ?? "",
       imageUrl: item?.imageUrl ?? "",
+      pdfUrl: item?.pdfUrl ?? "",
       link: item?.link ?? "",
     });
   }, [newsDialogOpen, editingNewsIndex]);
@@ -226,6 +267,7 @@ export default function AdminDashboard() {
       price: item?.price ?? "",
       validUntil: item?.validUntil ?? "",
       imageUrl: item?.imageUrl ?? "",
+      pdfUrl: item?.pdfUrl ?? "",
       link: item?.link ?? "",
       tags: (item?.tags ?? []).join(", "),
     });
@@ -240,6 +282,7 @@ export default function AdminDashboard() {
       summary: values.summary || undefined,
       body: values.body || undefined,
       imageUrl: values.imageUrl || undefined,
+      pdfUrl: values.pdfUrl || undefined,
       link: values.link || undefined,
     };
     const next = (() => {
@@ -263,6 +306,7 @@ export default function AdminDashboard() {
       price: values.price || undefined,
       validUntil: values.validUntil || undefined,
       imageUrl: values.imageUrl || undefined,
+      pdfUrl: values.pdfUrl || undefined,
       link: values.link || undefined,
       tags: (values.tags || "")
         .split(",")
@@ -523,15 +567,28 @@ export default function AdminDashboard() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField name="link" control={newsForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Odkaz (URL)</FormLabel>
-                        <FormControl>
-                          <Input type="url" placeholder="https://..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                     <FormField name="pdfUrl" control={newsForm.control} render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>PDF soubor</FormLabel>
+                         <div className="flex items-center gap-2">
+                           <FormControl>
+                             <Input type="text" placeholder="https://... nebo /content/..." {...field} />
+                           </FormControl>
+                           <input ref={newsPdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={onNewsPdfChange} />
+                           <Button type="button" variant="secondary" onClick={triggerNewsPdf}>Nahrát PDF</Button>
+                         </div>
+                         <FormMessage />
+                       </FormItem>
+                     )} />
+                     <FormField name="link" control={newsForm.control} render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>Odkaz (URL)</FormLabel>
+                         <FormControl>
+                           <Input type="url" placeholder="https://..." {...field} />
+                         </FormControl>
+                         <FormMessage />
+                       </FormItem>
+                     )} />
 
                     <DialogFooter>
                       <Button type="button" variant="secondary" onClick={() => setNewsDialogOpen(false)}>Zavřít</Button>
@@ -637,15 +694,28 @@ export default function AdminDashboard() {
                         <FormMessage />
                       </FormItem>
                     )} />
-                    <FormField name="link" control={promoForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Odkaz (URL)</FormLabel>
-                        <FormControl>
-                          <Input type="url" placeholder="https://..." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
+                     <FormField name="pdfUrl" control={promoForm.control} render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>PDF soubor</FormLabel>
+                         <div className="flex items-center gap-2">
+                           <FormControl>
+                             <Input type="text" placeholder="https://... nebo /content/..." {...field} />
+                           </FormControl>
+                           <input ref={promoPdfInputRef} type="file" accept="application/pdf" className="hidden" onChange={onPromoPdfChange} />
+                           <Button type="button" variant="secondary" onClick={triggerPromoPdf}>Nahrát PDF</Button>
+                         </div>
+                         <FormMessage />
+                       </FormItem>
+                     )} />
+                     <FormField name="link" control={promoForm.control} render={({ field }) => (
+                       <FormItem>
+                         <FormLabel>Odkaz (URL)</FormLabel>
+                         <FormControl>
+                           <Input type="url" placeholder="https://..." {...field} />
+                         </FormControl>
+                         <FormMessage />
+                       </FormItem>
+                     )} />
                     <FormField name="tags" control={promoForm.control} render={({ field }) => (
                       <FormItem>
                         <FormLabel>Štítky (oddělené čárkou)</FormLabel>

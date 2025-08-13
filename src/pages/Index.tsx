@@ -41,6 +41,7 @@ type NewsItem = {
   date: string; // YYYY-MM-DD
   summary?: string;
   imageUrl?: string;
+  pdfUrl?: string;
   link?: string;
 };
 
@@ -51,6 +52,7 @@ type Promotion = {
   price?: string;
   validUntil?: string; // YYYY-MM-DD nebo text
   imageUrl?: string;
+  pdfUrl?: string;
   link?: string;
   tags?: string[];
 };
@@ -251,11 +253,18 @@ useEffect(() => {
                   <h3 className="text-xl font-semibold">{n.title}</h3>
                   <p className="text-xs text-muted-foreground">{n.date}</p>
                   {n.summary && <p className="text-sm text-muted-foreground">{n.summary}</p>}
-                  {n.link && (
-                    <a href={n.link} target="_blank" rel="noreferrer">
-                      <Button variant="glass" size="sm">Více</Button>
-                    </a>
-                  )}
+                  <div className="flex items-center gap-2 pt-2">
+                    {n.link && (
+                      <a href={n.link} target="_blank" rel="noreferrer">
+                        <Button variant="glass" size="sm">Více</Button>
+                      </a>
+                    )}
+                    {n.pdfUrl && (
+                      <a href={n.pdfUrl} target="_blank" rel="noreferrer" download>
+                        <Button variant="outline" size="sm">Stáhnout PDF</Button>
+                      </a>
+                    )}
+                  </div>
                 </div>
               </article>
             ))}
@@ -290,11 +299,18 @@ useEffect(() => {
             <span className="text-primary font-bold">{p.price || ""}</span>
             <span className="text-xs text-muted-foreground">{p.validUntil ? `Platnost: ${p.validUntil}` : ""}</span>
           </div>
-          {p.link && (
-            <a href={p.link} target="_blank" rel="noreferrer">
-              <Button variant="glass" size="sm">Více</Button>
-            </a>
-          )}
+          <div className="flex items-center gap-2 pt-2">
+            {p.link && (
+              <a href={p.link} target="_blank" rel="noreferrer">
+                <Button variant="glass" size="sm">Více</Button>
+              </a>
+            )}
+            {p.pdfUrl && (
+              <a href={p.pdfUrl} target="_blank" rel="noreferrer" download>
+                <Button variant="outline" size="sm">Stáhnout PDF</Button>
+              </a>
+            )}
+          </div>
         </div>
       </article>
     ))}

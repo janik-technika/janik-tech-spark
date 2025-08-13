@@ -13,12 +13,12 @@
     ]
   },
   {
-    "id": "stiga-robot",
+    "id": "sqwtleqzi5fme9qj30e",
     "title": "STIGA Robotické sekačky - jarní akce",
     "description": "Kompletní sortiment robotických sekaček STIGA za akční ceny. Včetně instalace a uvedení do provozu zdarma.",
     "price": "od 24 990 Kč",
     "validUntil": "2025-04-30",
-    "imageUrl": "/assets/promo-stiga-robot.jpg",
+    "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1755075315703-PRODEJAKCESTIGA2png.png",
     "tags": [
       "robot",
       "sekačka",

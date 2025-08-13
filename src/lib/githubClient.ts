@@ -26,28 +26,46 @@ async function getFileInfo(path: string, cfg: GitHubConfig) {
   return res.json();
 }
 
-export async function upsertFile(path: string, content: string, message: string, cfg: GitHubConfig) {
-  const existing = await getFileInfo(path, cfg);
-  const body: any = {
-    message,
-    content: toBase64(content),
-    branch: cfg.branch,
-  };
-  if (existing?.sha) body.sha = existing.sha;
+export async function upsertFile(path: string, content: string, message: string, cfg: GitHubConfig, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const existing = await getFileInfo(path, cfg);
+      const body: any = {
+        message,
+        content: toBase64(content),
+        branch: cfg.branch,
+      };
+      if (existing?.sha) body.sha = existing.sha;
 
-  const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}`;
-  const res = await fetch(url, {
-    method: "PUT",
-    headers: {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${cfg.token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error(`GitHub upsert failed ${res.status}: ${t}`);
+      const url = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${encodeURIComponent(path)}`;
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${cfg.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      
+      if (res.ok) {
+        return res.json();
+      }
+      
+      // If 409 conflict and we have retries left, wait and try again
+      if (res.status === 409 && attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Progressive delay
+        continue;
+      }
+      
+      const t = await res.text();
+      throw new Error(`GitHub upsert failed ${res.status}: ${t}`);
+    } catch (error) {
+      if (attempt === retries) {
+        throw error;
+      }
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    }
   }
-  return res.json();
 }

@@ -51,6 +51,10 @@ const g18 = "/lovable-uploads/a3d230a6-4b69-4c2b-968c-a2447cceb834.png";
 const g19 = "/lovable-uploads/d46fad76-0f10-46fc-9448-7392db7cb240.png";
 const g20 = "/lovable-uploads/21516b2f-ad78-4f37-bfd6-42b327555683.png";
 const g21 = "/lovable-uploads/9545e903-38db-4652-b402-e021a044b5db.png";
+const g22 = "/lovable-uploads/80b67dd8-2af1-42e5-882b-5f8ff21ec1ad.png";
+const g23 = "/lovable-uploads/64342476-0670-4309-ac25-9cea4c20d90c.png";
+const g24 = "/lovable-uploads/b9de19da-1ae4-4b7c-9cf7-4aa2207b1999.png";
+const g25 = "/lovable-uploads/16349477-b3d8-4bc4-a1a6-dfce9fcbff99.png";
 
 type NewsItem = {
   id?: string;
@@ -89,7 +93,7 @@ const Index = () => {
   const [heroApi, setHeroApi] = useState<CarouselApi | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-  const gallery = [g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16, g17, g18, g19, g20, g21];
+  const gallery = [g1, g2, g3, g4, g5, g6, g7, g8, g9, g10, g11, g12, g13, g14, g15, g16, g17, g18, g19, g20, g21, g22, g23, g24, g25];
 
   const openLightbox = (index: number) => {
     setCurrentImageIndex(index);

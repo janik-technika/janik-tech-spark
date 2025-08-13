@@ -14,11 +14,11 @@ const BRAND_LOGOS = {
 } as const;
 
 const brands = [
-  { name: 'STIHL', img: BRAND_LOGOS.STIHL },
-  { name: 'STIGA', img: BRAND_LOGOS.STIGA },
-  { name: 'MAKITA', img: BRAND_LOGOS.MAKITA },
-  { name: 'FISKARS', img: BRAND_LOGOS.FISKARS },
-  { name: 'DAKR', img: BRAND_LOGOS.DAKR },
+  { name: 'STIHL', img: BRAND_LOGOS.STIHL, url: 'https://www.stihl.cz/' },
+  { name: 'STIGA', img: BRAND_LOGOS.STIGA, url: 'https://www.stiga.com/cz/' },
+  { name: 'MAKITA', img: BRAND_LOGOS.MAKITA, url: 'https://www.makita.cz/' },
+  { name: 'FISKARS', img: BRAND_LOGOS.FISKARS, url: 'https://www.fiskars.com/cz-cs' },
+  { name: 'DAKR', img: BRAND_LOGOS.DAKR, url: 'https://www.dakr.cz/' },
 ] as const;
 
 const heroSlides = [
@@ -260,7 +260,7 @@ useEffect(() => {
           </header>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
             {brands.map((b) => (
-              <a key={b.name} href="#" className="glass rounded-xl p-4 flex flex-col items-center gap-3 hover-scale">
+              <a key={b.name} href={b.url} target="_blank" rel="noopener noreferrer" className="glass rounded-xl p-4 flex flex-col items-center gap-3 hover-scale">
                 <img src={b.img} alt={`${b.name} logo`} loading="lazy" decoding="async" className="h-16 md:h-20 w-full object-contain" />
                 <div className="text-center">
                   <h3 className="font-semibold">{b.name}</h3>

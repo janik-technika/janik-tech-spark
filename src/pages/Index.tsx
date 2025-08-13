@@ -299,18 +299,20 @@ useEffect(() => {
             <span className="text-primary font-bold">{p.price || ""}</span>
             <span className="text-xs text-muted-foreground">{p.validUntil ? `Platnost: ${p.validUntil}` : ""}</span>
           </div>
-          <div className="flex items-center gap-2 pt-2">
-            {p.link && (
-              <a href={p.link} target="_blank" rel="noreferrer">
-                <Button variant="glass" size="sm">Více</Button>
-              </a>
-            )}
-            {p.pdfUrl && (
-              <a href={p.pdfUrl} target="_blank" rel="noreferrer" download>
-                <Button variant="outline" size="sm">Stáhnout PDF</Button>
-              </a>
-            )}
-          </div>
+          {(p.link || p.pdfUrl) && (
+            <div className="flex items-center gap-2 pt-2">
+              {p.link && (
+                <a href={p.link} target="_blank" rel="noreferrer">
+                  <Button variant="glass" size="sm">Více</Button>
+                </a>
+              )}
+              {p.pdfUrl && (
+                <a href={p.pdfUrl} target="_blank" rel="noreferrer" download>
+                  <Button variant="outline" size="sm">Stáhnout PDF</Button>
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </article>
     ))}

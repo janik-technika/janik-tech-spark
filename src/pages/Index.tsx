@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShieldCheck, Award, CheckCircle2, Wrench, Truck, GraduationCap } from "lucide-react";
+import { Menu, X, ShieldCheck, Award, CheckCircle2, Wrench, Truck, GraduationCap, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Map from "@/components/Map";
 const BRAND_LOGOS = {
   STIHL: "/lovable-uploads/d0f7fbfe-0589-4109-8a4b-be0d27769063.png",
@@ -75,7 +76,22 @@ const navItems = [
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [heroApi, setHeroApi] = useState<CarouselApi | null>(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const gallery = [g1, g2, g3, g4, g5, g6, g7, g8, g9, g10];
+
+  const openLightbox = (index: number) => {
+    setCurrentImageIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % gallery.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+  };
 
 const [news, setNews] = useState<NewsItem[]>([]);
 const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -387,7 +403,15 @@ useEffect(() => {
             <div className="glass rounded-xl p-4">
               <div className="grid grid-cols-3 gap-2">
                 {gallery.slice(0,6).map((src, i) => (
-                  <img key={i} src={src} alt={`Foto prodejny ${i+1}`} loading="lazy" decoding="async" className="h-28 w-full object-cover rounded" />
+                  <img 
+                    key={i} 
+                    src={src} 
+                    alt={`Foto prodejny ${i+1}`} 
+                    loading="lazy" 
+                    decoding="async" 
+                    className="h-28 w-full object-cover rounded cursor-pointer hover:opacity-75 transition-opacity" 
+                    onClick={() => openLightbox(i)}
+                  />
                 ))}
               </div>
             </div>
@@ -402,10 +426,62 @@ useEffect(() => {
           </header>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {gallery.map((src, i) => (
-              <img key={i} src={src} alt={`Galerie ${i+1}`} loading="lazy" decoding="async" className="aspect-video w-full object-cover rounded-lg" />
+              <img 
+                key={i} 
+                src={src} 
+                alt={`Galerie ${i+1}`} 
+                loading="lazy" 
+                decoding="async" 
+                className="aspect-video w-full object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity" 
+                onClick={() => openLightbox(i)}
+              />
             ))}
           </div>
         </section>
+
+        {/* Lightbox Modal */}
+        <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
+          <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/90 border-none">
+            <div className="relative w-full h-full flex items-center justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+                onClick={() => setIsLightboxOpen(false)}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute left-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                onClick={prevImage}
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-4 top-1/2 -translate-y-1/2 z-50 text-white hover:bg-white/20"
+                onClick={nextImage}
+              >
+                <ChevronRight className="h-8 w-8" />
+              </Button>
+              
+              <img
+                src={gallery[currentImageIndex]}
+                alt={`Galerie ${currentImageIndex + 1}`}
+                className="max-w-full max-h-full object-contain"
+              />
+              
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded">
+                {currentImageIndex + 1} / {gallery.length}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Partneři */}
         <section id="partneri" aria-labelledby="partneri-title">

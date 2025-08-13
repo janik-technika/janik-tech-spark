@@ -28,12 +28,17 @@ const heroSlides = [
 ] as const;
 
 
-import g1 from "@/assets/gallery-1.jpg";
-import g2 from "@/assets/gallery-2.jpg";
-import g3 from "@/assets/gallery-3.jpg";
-import g4 from "@/assets/gallery-4.jpg";
-import g5 from "@/assets/gallery-5.jpg";
-import g6 from "@/assets/gallery-6.jpg";
+// Importy pro nové fotky galerie z obchodu
+const g1 = "/lovable-uploads/2d642f51-ea48-4299-bb34-d57ae544e62b.png";
+const g2 = "/lovable-uploads/4c971d66-02cb-4189-8474-30f014c617ba.png";
+const g3 = "/lovable-uploads/4b26651a-bb28-4bed-a0cf-b6aa29a4824b.png";
+const g4 = "/lovable-uploads/770853a2-f85e-46a7-9094-84393434afe7.png";
+const g5 = "/lovable-uploads/5a206a97-c02e-4dd9-8235-b634fc88bc88.png";
+const g6 = "/lovable-uploads/04ac602a-e887-462c-a7ab-b61472061369.png";
+const g7 = "/lovable-uploads/ef45d816-67e9-4e8b-b098-76ef7b7b1056.png";
+const g8 = "/lovable-uploads/b0a2ab3e-4209-4370-833d-fb9c5c59e9b9.png";
+const g9 = "/lovable-uploads/b04db88d-fa8a-4287-a62e-626b6ccfa4c0.png";
+const g10 = "/lovable-uploads/bcdbde66-8fd0-4113-8f54-353d557cf127.png";
 
 type NewsItem = {
   id?: string;
@@ -70,7 +75,7 @@ const navItems = [
 const Index = () => {
   const [open, setOpen] = useState(false);
   const [heroApi, setHeroApi] = useState<CarouselApi | null>(null);
-  const gallery = [g1, g2, g3, g4, g5, g6, g1, g2, g3, g4, g5, g6];
+  const gallery = [g1, g2, g3, g4, g5, g6, g7, g8, g9, g10];
 
 const [news, setNews] = useState<NewsItem[]>([]);
 const [promotions, setPromotions] = useState<Promotion[]>([]);

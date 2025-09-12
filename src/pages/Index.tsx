@@ -155,7 +155,7 @@ useEffect(() => {
               <img 
                 src={janikLogo} 
                 alt="JANÍK zahradní a lesní technika" 
-                className="h-8 w-auto"
+                className="h-12 w-auto max-w-[200px] md:max-w-[300px]"
               />
             </a>
 

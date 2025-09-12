@@ -5,6 +5,7 @@ import { Menu, X, ShieldCheck, Award, CheckCircle2, Wrench, Truck, GraduationCap
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/components/ui/carousel";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Map from "@/components/Map";
+import janikLogo from "@/assets/janik-logo.jpg";
 const BRAND_LOGOS = {
   STIHL: "/lovable-uploads/d0f7fbfe-0589-4109-8a4b-be0d27769063.png",
   STIGA: "/lovable-uploads/b306d60a-e713-429d-a0fe-770995392933.png",
@@ -21,7 +22,7 @@ const brands = [
   { name: 'DAKR', img: BRAND_LOGOS.DAKR, url: 'https://www.dakr.cz/' },
 ] as const;
 
-const janikLogo = "/src/assets/janik-logo.jpg";
+
 
 const heroSlides = [
   "/lovable-uploads/248ef94c-a04c-4eb5-8628-4b240bc5586f.png",

@@ -156,7 +156,11 @@ useEffect(() => {
               <img 
                 src={janikLogo} 
                 alt="JANÍK zahradní a lesní technika" 
-                className="h-12 w-auto max-w-[200px] md:max-w-[300px]"
+                className="h-14 md:h-16 w-auto object-contain"
+                onError={(e) => {
+                  // Fallback in case the asset path breaks after updates
+                  (e.currentTarget as HTMLImageElement).src = "/social-card.png";
+                }}
               />
             </a>
 

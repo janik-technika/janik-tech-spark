@@ -21,6 +21,8 @@ const brands = [
   { name: 'DAKR', img: BRAND_LOGOS.DAKR, url: 'https://www.dakr.cz/' },
 ] as const;
 
+const janikLogo = "/src/assets/janik-logo.jpg";
+
 const heroSlides = [
   "/lovable-uploads/248ef94c-a04c-4eb5-8628-4b240bc5586f.png",
   "/lovable-uploads/ec6e85c9-6867-4261-9e2d-43c071b02fee.png",
@@ -149,9 +151,12 @@ useEffect(() => {
       <header className="fixed top-0 inset-x-0 z-50">
         <div className="glass container mx-auto mt-4 rounded-xl px-4 py-3">
           <div className="flex items-center justify-between">
-            <a href="#hero" className="flex items-center gap-3">
-              <div className="h-8 w-8 rounded-md bg-primary/20 border border-white/10" />
-              <span className="text-lg font-semibold tracking-wide"><span className="text-gradient-primary">JANÍK</span> zahradní a lesní technika</span>
+            <a href="#hero" className="flex items-center">
+              <img 
+                src={janikLogo} 
+                alt="JANÍK zahradní a lesní technika" 
+                className="h-8 w-auto"
+              />
             </a>
 
             <nav className="hidden md:flex items-center gap-6 text-sm">

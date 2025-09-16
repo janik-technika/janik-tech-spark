@@ -595,7 +595,7 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     sessionStorage.removeItem("admin_auth");
     toast({ title: "Úspěšně odhlášen" });
-    navigate("/admin/login");
+    navigate("/");
   };
 
   const cfg: GitHubConfig | null = useMemo(() => {

@@ -423,27 +423,29 @@ useEffect(() => {
                 <h3 className="font-semibold">Adresa</h3>
                 <p className="text-muted-foreground text-sm">(doplnit ulici a číslo), (PSČ) (město)</p>
               </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold">Standardní otevírací doba</h4>
-                  <table className="w-full text-sm text-muted-foreground">
-                    <tbody>
-                      <tr><td>Po–Pá</td><td className="text-right">08:00 – 17:00</td></tr>
-                      <tr><td>Sobota</td><td className="text-right">09:00 – 12:00</td></tr>
-                      <tr><td>Neděle</td><td className="text-right">Zavřeno</td></tr>
-                    </tbody>
-                  </table>
+              {openingHours && (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold">Standardní otevírací doba</h4>
+                    <table className="w-full text-sm text-muted-foreground">
+                      <tbody>
+                        <tr><td>Po–Pá</td><td className="text-right">{openingHours.standard.mondayToFriday}</td></tr>
+                        <tr><td>Sobota</td><td className="text-right">{openingHours.standard.saturday}</td></tr>
+                        <tr><td>Neděle</td><td className="text-right">{openingHours.standard.sunday}</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Mimosezóna</h4>
+                    <table className="w-full text-sm text-muted-foreground">
+                      <tbody>
+                        <tr><td>Po–Pá</td><td className="text-right">{openingHours.offSeason.mondayToFriday}</td></tr>
+                        <tr><td>So–Ne</td><td className="text-right">{openingHours.offSeason.saturdayToSunday}</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold">Mimosezóna</h4>
-                  <table className="w-full text-sm text-muted-foreground">
-                    <tbody>
-                      <tr><td>Po–Pá</td><td className="text-right">09:00 – 16:00</td></tr>
-                      <tr><td>So–Ne</td><td className="text-right">Zavřeno</td></tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              )}
               <div className="pt-2 flex gap-3">
                 <a href="https://maps.google.com" target="_blank" rel="noreferrer"><Button variant="glass">Zobrazit na mapě</Button></a>
                 <a href="#galerie"><Button variant="default">Galerie</Button></a>
@@ -560,16 +562,6 @@ useEffect(() => {
                 Tel.: +420 606 806 021<br/>
                 E-mail: janik.stihl@gmail.com
               </p>
-              {openingHours && (
-                <div className="mt-4">
-                  <h4 className="font-medium text-sm">Otevírací doba</h4>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    <p>Po-Pá: {openingHours.standard.mondayToFriday}</p>
-                    <p>So: {openingHours.standard.saturday}</p>
-                    <p>Ne: {openingHours.standard.sunday}</p>
-                  </div>
-                </div>
-              )}
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold">Fakturační adresa</h3>

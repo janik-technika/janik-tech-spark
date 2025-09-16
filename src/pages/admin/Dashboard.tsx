@@ -37,15 +37,29 @@ export type NewsItem = {
   link?: string;
 };
 
+interface DayHours {
+  morning: string;
+  afternoon: string;
+}
+
 export type OpeningHours = {
   standard: {
-    mondayToFriday: string;
+    monday: DayHours | string;
+    tuesday: DayHours | string;
+    wednesday: DayHours | string;
+    thursday: DayHours | string;
+    friday: DayHours | string;
     saturday: string;
     sunday: string;
   };
   offSeason: {
-    mondayToFriday: string;
-    saturdayToSunday: string;
+    monday: DayHours | string;
+    tuesday: DayHours | string;
+    wednesday: DayHours | string;
+    thursday: DayHours | string;
+    friday: DayHours | string;
+    saturday: string;
+    sunday: string;
   };
 };
 
@@ -73,15 +87,33 @@ const promoSchema = z.object({
 });
 
 const openingHoursSchema = z.object({
-  standard: z.object({
-    mondayToFriday: z.string().min(1, "Zadejte otevírací dobu pro Po-Pá"),
-    saturday: z.string().min(1, "Zadejte otevírací dobu pro sobotu"),
-    sunday: z.string().min(1, "Zadejte otevírací dobu pro neděli"),
-  }),
-  offSeason: z.object({
-    mondayToFriday: z.string().min(1, "Zadejte mimosezonní otevírací dobu pro Po-Pá"),
-    saturdayToSunday: z.string().min(1, "Zadejte mimosezonní otevírací dobu pro So-Ne"),
-  }),
+  // Standard hours
+  standardMondayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  standardMondayAfternoon: z.string().optional(),
+  standardTuesdayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  standardTuesdayAfternoon: z.string().optional(),
+  standardWednesdayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  standardWednesdayAfternoon: z.string().optional(),
+  standardThursdayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  standardThursdayAfternoon: z.string().optional(),
+  standardFridayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  standardFridayAfternoon: z.string().optional(),
+  standardSaturday: z.string().min(1, "Zadejte otevírací dobu pro sobotu"),
+  standardSunday: z.string().min(1, "Zadejte otevírací dobu pro neděli"),
+  
+  // Off-season hours
+  offSeasonMondayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  offSeasonMondayAfternoon: z.string().optional(),
+  offSeasonTuesdayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  offSeasonTuesdayAfternoon: z.string().optional(),
+  offSeasonWednesdayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  offSeasonWednesdayAfternoon: z.string().optional(),
+  offSeasonThursdayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  offSeasonThursdayAfternoon: z.string().optional(),
+  offSeasonFridayMorning: z.string().min(1, "Zadejte dopolední hodiny"),
+  offSeasonFridayAfternoon: z.string().optional(),
+  offSeasonSaturday: z.string().min(1, "Zadejte otevírací dobu pro sobotu"),
+  offSeasonSunday: z.string().min(1, "Zadejte otevírací dobu pro neděli"),
 });
 
 function genId() {
@@ -116,13 +148,22 @@ export default function AdminDashboard() {
   const [promos, setPromos] = useState<Promotion[]>([]);
   const [openingHours, setOpeningHours] = useState<OpeningHours>({
     standard: {
-      mondayToFriday: "08:00 – 17:00",
-      saturday: "09:00 – 12:00",
+      monday: { morning: "08:00-12:00", afternoon: "13:00-17:00" },
+      tuesday: { morning: "08:00-12:00", afternoon: "13:00-17:00" },
+      wednesday: { morning: "08:00-12:00", afternoon: "13:00-17:00" },
+      thursday: { morning: "08:00-12:00", afternoon: "13:00-17:00" },
+      friday: { morning: "08:00-12:00", afternoon: "13:00-15:00" },
+      saturday: "Zavřeno",
       sunday: "Zavřeno"
     },
     offSeason: {
-      mondayToFriday: "09:00 – 16:00",
-      saturdayToSunday: "Zavřeno"
+      monday: { morning: "08:00-12:00", afternoon: "13:00-16:00" },
+      tuesday: { morning: "08:00-12:00", afternoon: "13:00-16:00" },
+      wednesday: { morning: "08:00-12:00", afternoon: "13:00-16:00" },
+      thursday: { morning: "08:00-12:00", afternoon: "13:00-16:00" },
+      friday: { morning: "08:00-12:00", afternoon: "" },
+      saturday: "Zavřeno",
+      sunday: "Zavřeno"
     }
   });
 
@@ -281,7 +322,33 @@ export default function AdminDashboard() {
 
   const openingHoursForm = useForm<z.infer<typeof openingHoursSchema>>({
     resolver: zodResolver(openingHoursSchema),
-    defaultValues: openingHours,
+    defaultValues: {
+      standardMondayMorning: "08:00-12:00",
+      standardMondayAfternoon: "13:00-17:00",
+      standardTuesdayMorning: "08:00-12:00",
+      standardTuesdayAfternoon: "13:00-17:00",
+      standardWednesdayMorning: "08:00-12:00",
+      standardWednesdayAfternoon: "13:00-17:00",
+      standardThursdayMorning: "08:00-12:00",
+      standardThursdayAfternoon: "13:00-17:00",
+      standardFridayMorning: "08:00-12:00",
+      standardFridayAfternoon: "13:00-15:00",
+      standardSaturday: "Zavřeno",
+      standardSunday: "Zavřeno",
+      
+      offSeasonMondayMorning: "08:00-12:00",
+      offSeasonMondayAfternoon: "13:00-16:00",
+      offSeasonTuesdayMorning: "08:00-12:00",
+      offSeasonTuesdayAfternoon: "13:00-16:00",
+      offSeasonWednesdayMorning: "08:00-12:00",
+      offSeasonWednesdayAfternoon: "13:00-16:00",
+      offSeasonThursdayMorning: "08:00-12:00",
+      offSeasonThursdayAfternoon: "13:00-16:00",
+      offSeasonFridayMorning: "08:00-12:00",
+      offSeasonFridayAfternoon: "",
+      offSeasonSaturday: "Zavřeno",
+      offSeasonSunday: "Zavřeno",
+    },
   });
 
   // Reset forms when opening dialogs
@@ -316,7 +383,41 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!openingHoursDialogOpen) return;
-    openingHoursForm.reset(openingHours);
+    // Convert OpeningHours to form values
+    const getFormValues = (hours: OpeningHours) => {
+      const standard = hours.standard;
+      const offSeason = hours.offSeason;
+      
+      return {
+        standardMondayMorning: typeof standard.monday === 'string' ? standard.monday : standard.monday.morning,
+        standardMondayAfternoon: typeof standard.monday === 'string' ? "" : standard.monday.afternoon,
+        standardTuesdayMorning: typeof standard.tuesday === 'string' ? standard.tuesday : standard.tuesday.morning,  
+        standardTuesdayAfternoon: typeof standard.tuesday === 'string' ? "" : standard.tuesday.afternoon,
+        standardWednesdayMorning: typeof standard.wednesday === 'string' ? standard.wednesday : standard.wednesday.morning,
+        standardWednesdayAfternoon: typeof standard.wednesday === 'string' ? "" : standard.wednesday.afternoon,
+        standardThursdayMorning: typeof standard.thursday === 'string' ? standard.thursday : standard.thursday.morning,
+        standardThursdayAfternoon: typeof standard.thursday === 'string' ? "" : standard.thursday.afternoon,
+        standardFridayMorning: typeof standard.friday === 'string' ? standard.friday : standard.friday.morning,
+        standardFridayAfternoon: typeof standard.friday === 'string' ? "" : standard.friday.afternoon,
+        standardSaturday: standard.saturday,
+        standardSunday: standard.sunday,
+        
+        offSeasonMondayMorning: typeof offSeason.monday === 'string' ? offSeason.monday : offSeason.monday.morning,
+        offSeasonMondayAfternoon: typeof offSeason.monday === 'string' ? "" : offSeason.monday.afternoon,
+        offSeasonTuesdayMorning: typeof offSeason.tuesday === 'string' ? offSeason.tuesday : offSeason.tuesday.morning,
+        offSeasonTuesdayAfternoon: typeof offSeason.tuesday === 'string' ? "" : offSeason.tuesday.afternoon,
+        offSeasonWednesdayMorning: typeof offSeason.wednesday === 'string' ? offSeason.wednesday : offSeason.wednesday.morning,
+        offSeasonWednesdayAfternoon: typeof offSeason.wednesday === 'string' ? "" : offSeason.wednesday.afternoon,
+        offSeasonThursdayMorning: typeof offSeason.thursday === 'string' ? offSeason.thursday : offSeason.thursday.morning,
+        offSeasonThursdayAfternoon: typeof offSeason.thursday === 'string' ? "" : offSeason.thursday.afternoon,
+        offSeasonFridayMorning: typeof offSeason.friday === 'string' ? offSeason.friday : offSeason.friday.morning,
+        offSeasonFridayAfternoon: typeof offSeason.friday === 'string' ? "" : offSeason.friday.afternoon,
+        offSeasonSaturday: offSeason.saturday,
+        offSeasonSunday: offSeason.sunday,
+      };
+    };
+    
+    openingHoursForm.reset(getFormValues(openingHours));
   }, [openingHoursDialogOpen, openingHours]);
 
   // Handlers
@@ -375,13 +476,22 @@ export default function AdminDashboard() {
   const onSubmitOpeningHours = (values: z.infer<typeof openingHoursSchema>) => {
     const openingHoursData: OpeningHours = {
       standard: {
-        mondayToFriday: values.standard.mondayToFriday,
-        saturday: values.standard.saturday,
-        sunday: values.standard.sunday,
+        monday: { morning: values.standardMondayMorning, afternoon: values.standardMondayAfternoon || "" },
+        tuesday: { morning: values.standardTuesdayMorning, afternoon: values.standardTuesdayAfternoon || "" },
+        wednesday: { morning: values.standardWednesdayMorning, afternoon: values.standardWednesdayAfternoon || "" },
+        thursday: { morning: values.standardThursdayMorning, afternoon: values.standardThursdayAfternoon || "" },
+        friday: { morning: values.standardFridayMorning, afternoon: values.standardFridayAfternoon || "" },
+        saturday: values.standardSaturday,
+        sunday: values.standardSunday,
       },
       offSeason: {
-        mondayToFriday: values.offSeason.mondayToFriday,
-        saturdayToSunday: values.offSeason.saturdayToSunday,
+        monday: { morning: values.offSeasonMondayMorning, afternoon: values.offSeasonMondayAfternoon || "" },
+        tuesday: { morning: values.offSeasonTuesdayMorning, afternoon: values.offSeasonTuesdayAfternoon || "" },
+        wednesday: { morning: values.offSeasonWednesdayMorning, afternoon: values.offSeasonWednesdayAfternoon || "" },
+        thursday: { morning: values.offSeasonThursdayMorning, afternoon: values.offSeasonThursdayAfternoon || "" },
+        friday: { morning: values.offSeasonFridayMorning, afternoon: values.offSeasonFridayAfternoon || "" },
+        saturday: values.offSeasonSaturday,
+        sunday: values.offSeasonSunday,
       }
     };
     setOpeningHours(openingHoursData);
@@ -562,14 +672,23 @@ export default function AdminDashboard() {
             <div className="space-y-3">
               <div>
                 <h4 className="font-semibold text-sm">Standardní</h4>
-                <p className="text-xs text-muted-foreground">Po–Pá: {openingHours.standard.mondayToFriday}</p>
+                <p className="text-xs text-muted-foreground">Pondělí: {typeof openingHours.standard.monday === 'string' ? openingHours.standard.monday : `${openingHours.standard.monday.morning} ${openingHours.standard.monday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Úterý: {typeof openingHours.standard.tuesday === 'string' ? openingHours.standard.tuesday : `${openingHours.standard.tuesday.morning} ${openingHours.standard.tuesday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Středa: {typeof openingHours.standard.wednesday === 'string' ? openingHours.standard.wednesday : `${openingHours.standard.wednesday.morning} ${openingHours.standard.wednesday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Čtvrtek: {typeof openingHours.standard.thursday === 'string' ? openingHours.standard.thursday : `${openingHours.standard.thursday.morning} ${openingHours.standard.thursday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Pátek: {typeof openingHours.standard.friday === 'string' ? openingHours.standard.friday : `${openingHours.standard.friday.morning} ${openingHours.standard.friday.afternoon}`.trim()}</p>
                 <p className="text-xs text-muted-foreground">Sobota: {openingHours.standard.saturday}</p>
                 <p className="text-xs text-muted-foreground">Neděle: {openingHours.standard.sunday}</p>
               </div>
               <div>
                 <h4 className="font-semibold text-sm">Mimosezóna</h4>
-                <p className="text-xs text-muted-foreground">Po–Pá: {openingHours.offSeason.mondayToFriday}</p>
-                <p className="text-xs text-muted-foreground">So–Ne: {openingHours.offSeason.saturdayToSunday}</p>
+                <p className="text-xs text-muted-foreground">Pondělí: {typeof openingHours.offSeason.monday === 'string' ? openingHours.offSeason.monday : `${openingHours.offSeason.monday.morning} ${openingHours.offSeason.monday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Úterý: {typeof openingHours.offSeason.tuesday === 'string' ? openingHours.offSeason.tuesday : `${openingHours.offSeason.tuesday.morning} ${openingHours.offSeason.tuesday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Středa: {typeof openingHours.offSeason.wednesday === 'string' ? openingHours.offSeason.wednesday : `${openingHours.offSeason.wednesday.morning} ${openingHours.offSeason.wednesday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Čtvrtek: {typeof openingHours.offSeason.thursday === 'string' ? openingHours.offSeason.thursday : `${openingHours.offSeason.thursday.morning} ${openingHours.offSeason.thursday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Pátek: {typeof openingHours.offSeason.friday === 'string' ? openingHours.offSeason.friday : `${openingHours.offSeason.friday.morning} ${openingHours.offSeason.friday.afternoon}`.trim()}</p>
+                <p className="text-xs text-muted-foreground">Sobota: {openingHours.offSeason.saturday}</p>
+                <p className="text-xs text-muted-foreground">Neděle: {openingHours.offSeason.sunday}</p>
               </div>
             </div>
 
@@ -582,54 +701,262 @@ export default function AdminDashboard() {
                   <form onSubmit={openingHoursForm.handleSubmit(onSubmitOpeningHours)} className="space-y-4">
                     <div className="space-y-3">
                       <h4 className="font-semibold">Standardní otevírací doba</h4>
-                      <FormField name="standard.mondayToFriday" control={openingHoursForm.control} render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pondělí – Pátek</FormLabel>
-                          <FormControl>
-                            <Input placeholder="08:00 – 17:00" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField name="standard.saturday" control={openingHoursForm.control} render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sobota</FormLabel>
-                          <FormControl>
-                            <Input placeholder="09:00 – 12:00" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField name="standard.sunday" control={openingHoursForm.control} render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Neděle</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Zavřeno" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="standardMondayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pondělí dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="standardMondayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pondělí odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-17:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="standardTuesdayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Úterý dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="standardTuesdayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Úterý odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-17:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="standardWednesdayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Středa dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="standardWednesdayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Středa odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-17:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="standardThursdayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Čtvrtek dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="standardThursdayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Čtvrtek odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-17:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="standardFridayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pátek dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="standardFridayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pátek odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-15:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="standardSaturday" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Sobota</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Zavřeno" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="standardSunday" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Neděle</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Zavřeno" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
                     </div>
+                    
                     <div className="space-y-3">
                       <h4 className="font-semibold">Mimosezonní otevírací doba</h4>
-                      <FormField name="offSeason.mondayToFriday" control={openingHoursForm.control} render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Pondělí – Pátek</FormLabel>
-                          <FormControl>
-                            <Input placeholder="09:00 – 16:00" {...field} />
-                          </FormControl>  
-                          <FormMessage />
-                        </FormItem>
-                      )} />
-                      <FormField name="offSeason.saturdayToSunday" control={openingHoursForm.control} render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Sobota – Neděle</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Zavřeno" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )} />
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="offSeasonMondayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pondělí dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="offSeasonMondayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pondělí odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-16:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="offSeasonTuesdayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Úterý dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="offSeasonTuesdayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Úterý odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-16:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="offSeasonWednesdayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Středa dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="offSeasonWednesdayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Středa odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-16:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="offSeasonThursdayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Čtvrtek dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="offSeasonThursdayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Čtvrtek odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="13:00-16:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="offSeasonFridayMorning" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pátek dopoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="08:00-12:00" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="offSeasonFridayAfternoon" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Pátek odpoledne</FormLabel>
+                            <FormControl>
+                              <Input placeholder="" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-2">
+                        <FormField name="offSeasonSaturday" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Sobota</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Zavřeno" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                        <FormField name="offSeasonSunday" control={openingHoursForm.control} render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Neděle</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Zavřeno" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
+                      </div>
                     </div>
                     <DialogFooter>
                       <Button type="button" variant="secondary" onClick={() => setOpeningHoursDialogOpen(false)}>Zavřít</Button>

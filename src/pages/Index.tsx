@@ -82,17 +82,31 @@ type Promotion = {
   tags?: string[];
 };
 
-type OpeningHours = {
+interface DayHours {
+  morning: string;
+  afternoon: string;
+}
+
+interface OpeningHours {
   standard: {
-    mondayToFriday: string;
+    monday: DayHours | string;
+    tuesday: DayHours | string;
+    wednesday: DayHours | string;
+    thursday: DayHours | string;
+    friday: DayHours | string;
     saturday: string;
     sunday: string;
   };
   offSeason: {
-    mondayToFriday: string;
-    saturdayToSunday: string;
+    monday: DayHours | string;
+    tuesday: DayHours | string;
+    wednesday: DayHours | string;
+    thursday: DayHours | string;
+    friday: DayHours | string;
+    saturday: string;
+    sunday: string;
   };
-};
+}
 
 const navItems = [
   { href: "#onas", label: "O nás" },
@@ -429,7 +443,11 @@ useEffect(() => {
                     <h4 className="font-semibold">Standardní otevírací doba</h4>
                     <table className="w-full text-sm text-muted-foreground">
                       <tbody>
-                        <tr><td>Po–Pá</td><td className="text-right">{openingHours.standard.mondayToFriday}</td></tr>
+                        <tr><td>Pondělí</td><td className="text-right">{typeof openingHours.standard.monday === 'string' ? openingHours.standard.monday : `${openingHours.standard.monday.morning} ${openingHours.standard.monday.afternoon}`}</td></tr>
+                        <tr><td>Úterý</td><td className="text-right">{typeof openingHours.standard.tuesday === 'string' ? openingHours.standard.tuesday : `${openingHours.standard.tuesday.morning} ${openingHours.standard.tuesday.afternoon}`}</td></tr>
+                        <tr><td>Středa</td><td className="text-right">{typeof openingHours.standard.wednesday === 'string' ? openingHours.standard.wednesday : `${openingHours.standard.wednesday.morning} ${openingHours.standard.wednesday.afternoon}`}</td></tr>
+                        <tr><td>Čtvrtek</td><td className="text-right">{typeof openingHours.standard.thursday === 'string' ? openingHours.standard.thursday : `${openingHours.standard.thursday.morning} ${openingHours.standard.thursday.afternoon}`}</td></tr>
+                        <tr><td>Pátek</td><td className="text-right">{typeof openingHours.standard.friday === 'string' ? openingHours.standard.friday : `${openingHours.standard.friday.morning} ${openingHours.standard.friday.afternoon}`.trim()}</td></tr>
                         <tr><td>Sobota</td><td className="text-right">{openingHours.standard.saturday}</td></tr>
                         <tr><td>Neděle</td><td className="text-right">{openingHours.standard.sunday}</td></tr>
                       </tbody>
@@ -439,8 +457,13 @@ useEffect(() => {
                     <h4 className="font-semibold">Mimosezóna</h4>
                     <table className="w-full text-sm text-muted-foreground">
                       <tbody>
-                        <tr><td>Po–Pá</td><td className="text-right">{openingHours.offSeason.mondayToFriday}</td></tr>
-                        <tr><td>So–Ne</td><td className="text-right">{openingHours.offSeason.saturdayToSunday}</td></tr>
+                        <tr><td>Pondělí</td><td className="text-right">{typeof openingHours.offSeason.monday === 'string' ? openingHours.offSeason.monday : `${openingHours.offSeason.monday.morning} ${openingHours.offSeason.monday.afternoon}`}</td></tr>
+                        <tr><td>Úterý</td><td className="text-right">{typeof openingHours.offSeason.tuesday === 'string' ? openingHours.offSeason.tuesday : `${openingHours.offSeason.tuesday.morning} ${openingHours.offSeason.tuesday.afternoon}`}</td></tr>
+                        <tr><td>Středa</td><td className="text-right">{typeof openingHours.offSeason.wednesday === 'string' ? openingHours.offSeason.wednesday : `${openingHours.offSeason.wednesday.morning} ${openingHours.offSeason.wednesday.afternoon}`}</td></tr>
+                        <tr><td>Čtvrtek</td><td className="text-right">{typeof openingHours.offSeason.thursday === 'string' ? openingHours.offSeason.thursday : `${openingHours.offSeason.thursday.morning} ${openingHours.offSeason.thursday.afternoon}`}</td></tr>
+                        <tr><td>Pátek</td><td className="text-right">{typeof openingHours.offSeason.friday === 'string' ? openingHours.offSeason.friday : `${openingHours.offSeason.friday.morning} ${openingHours.offSeason.friday.afternoon}`.trim()}</td></tr>
+                        <tr><td>Sobota</td><td className="text-right">{openingHours.offSeason.saturday}</td></tr>
+                        <tr><td>Neděle</td><td className="text-right">{openingHours.offSeason.sunday}</td></tr>
                       </tbody>
                     </table>
                   </div>

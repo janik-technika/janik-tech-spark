@@ -1,11 +1,20 @@
 {
   "standard": {
-    "mondayToFriday": "08:00 – 22:00",
-    "saturday": "09:00 – 12:00",
+    "monday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
+    "tuesday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
+    "wednesday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
+    "thursday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
+    "friday": { "morning": "08:00-12:00", "afternoon": "13:00-15:00" },
+    "saturday": "Zavřeno",
     "sunday": "Zavřeno"
   },
   "offSeason": {
-    "mondayToFriday": "09:00 – 16:00",
-    "saturdayToSunday": "Zavřeno"
+    "monday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
+    "tuesday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
+    "wednesday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
+    "thursday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
+    "friday": { "morning": "08:00-12:00", "afternoon": "" },
+    "saturday": "Zavřeno",
+    "sunday": "Zavřeno"
   }
 }

@@ -37,6 +37,18 @@ export type NewsItem = {
   link?: string;
 };
 
+export type OpeningHours = {
+  standard: {
+    mondayToFriday: string;
+    saturday: string;
+    sunday: string;
+  };
+  offSeason: {
+    mondayToFriday: string;
+    saturdayToSunday: string;
+  };
+};
+
 const newsSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(1, "Zadejte nadpis"),
@@ -58,6 +70,18 @@ const promoSchema = z.object({
   pdfUrl: z.string().optional().refine((v) => !v || /^https?:\/\//.test(v) || /^\//.test(v), "Musí být platná URL nebo cesta od kořene (/...)") ,
   link: z.string().url("Musí být platná URL").optional().or(z.literal("")),
   tags: z.string().optional(), // comma-separated in form
+});
+
+const openingHoursSchema = z.object({
+  standard: z.object({
+    mondayToFriday: z.string().min(1, "Zadejte otevírací dobu pro Po-Pá"),
+    saturday: z.string().min(1, "Zadejte otevírací dobu pro sobotu"),
+    sunday: z.string().min(1, "Zadejte otevírací dobu pro neděli"),
+  }),
+  offSeason: z.object({
+    mondayToFriday: z.string().min(1, "Zadejte mimosezonní otevírací dobu pro Po-Pá"),
+    saturdayToSunday: z.string().min(1, "Zadejte mimosezonní otevírací dobu pro So-Ne"),
+  }),
 });
 
 function genId() {
@@ -90,12 +114,24 @@ export default function AdminDashboard() {
   const [tokenInput, setTokenInput] = useState("");
   const [news, setNews] = useState<NewsItem[]>([]);
   const [promos, setPromos] = useState<Promotion[]>([]);
+  const [openingHours, setOpeningHours] = useState<OpeningHours>({
+    standard: {
+      mondayToFriday: "08:00 – 17:00",
+      saturday: "09:00 – 12:00",
+      sunday: "Zavřeno"
+    },
+    offSeason: {
+      mondayToFriday: "09:00 – 16:00",
+      saturdayToSunday: "Zavřeno"
+    }
+  });
 
   // Dialog states
   const [newsDialogOpen, setNewsDialogOpen] = useState(false);
   const [editingNewsIndex, setEditingNewsIndex] = useState<number | null>(null);
   const [promoDialogOpen, setPromoDialogOpen] = useState(false);
   const [editingPromoIndex, setEditingPromoIndex] = useState<number | null>(null);
+  const [openingHoursDialogOpen, setOpeningHoursDialogOpen] = useState(false);
 
   // File input refs
   const newsFileInputRef = useRef<HTMLInputElement>(null);
@@ -243,6 +279,11 @@ export default function AdminDashboard() {
     },
   });
 
+  const openingHoursForm = useForm<z.infer<typeof openingHoursSchema>>({
+    resolver: zodResolver(openingHoursSchema),
+    defaultValues: openingHours,
+  });
+
   // Reset forms when opening dialogs
   useEffect(() => {
     if (!newsDialogOpen) return;
@@ -272,6 +313,11 @@ export default function AdminDashboard() {
       tags: (item?.tags ?? []).join(", "),
     });
   }, [promoDialogOpen, editingPromoIndex]);
+
+  useEffect(() => {
+    if (!openingHoursDialogOpen) return;
+    openingHoursForm.reset(openingHours);
+  }, [openingHoursDialogOpen, openingHours]);
 
   // Handlers
   const onSubmitNews = (values: z.infer<typeof newsSchema>) => {
@@ -324,6 +370,24 @@ export default function AdminDashboard() {
     setPromoDialogOpen(false);
     setEditingPromoIndex(null);
     toast({ title: editingPromoIndex != null ? "Akce upravena" : "Akce přidána" });
+  };
+
+  const onSubmitOpeningHours = (values: z.infer<typeof openingHoursSchema>) => {
+    const openingHoursData: OpeningHours = {
+      standard: {
+        mondayToFriday: values.standard.mondayToFriday,
+        saturday: values.standard.saturday,
+        sunday: values.standard.sunday,
+      },
+      offSeason: {
+        mondayToFriday: values.offSeason.mondayToFriday,
+        saturdayToSunday: values.offSeason.saturdayToSunday,
+      }
+    };
+    setOpeningHours(openingHoursData);
+    saveJSON("opening-hours", openingHoursData);
+    setOpeningHoursDialogOpen(false);
+    toast({ title: "Otevírací doba upravena" });
   };
 
   const deleteNews = (idx: number) => {
@@ -391,6 +455,13 @@ export default function AdminDashboard() {
         if (Array.isArray(data)) setPromos(data as Promotion[]);
       })
       .catch(() => {});
+    fetch("/content/opening-hours.json")
+      .then(async (r) => {
+        if (!r.ok) return;
+        const data = await r.json();
+        if (data && typeof data === 'object') setOpeningHours(data as OpeningHours);
+      })
+      .catch(() => {});
   }, []);
 
   const saveToken = () => {
@@ -414,15 +485,17 @@ export default function AdminDashboard() {
     return { owner, repo, branch, token: pat };
   }, [owner, repo, branch, pat]);
 
-  const saveJSON = async (which: "news" | "promos", dataOverride?: Array<NewsItem | Promotion>) => {
+  const saveJSON = async (which: "news" | "promos" | "opening-hours", dataOverride?: Array<NewsItem | Promotion> | OpeningHours) => {
     try {
       if (!cfg) {
         toast({ title: "Doplňte nastavení repozitáře a token", variant: "destructive" });
         return;
       }
-      const data = (dataOverride as any) ?? (which === "news" ? news : promos);
+      const data = (dataOverride as any) ?? (which === "news" ? news : which === "promos" ? promos : openingHours);
       const pretty = JSON.stringify(data, null, 2);
-      const path = which === "news" ? "public/content/news.json" : "public/content/promotions.json";
+      const path = which === "news" ? "public/content/news.json" : 
+                   which === "promos" ? "public/content/promotions.json" : 
+                   "public/content/opening-hours.json";
       await upsertFile(path, pretty + "\n", `chore(content): update ${which}`, cfg);
       toast({ title: "Uloženo do GitHubu" });
     } catch (e: any) {
@@ -475,7 +548,100 @@ export default function AdminDashboard() {
         </Card>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2">
+      <section className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Otevírací doba</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex justify-start items-center">
+              <Button onClick={() => setOpeningHoursDialogOpen(true)}>
+                <Pencil className="mr-2 h-4 w-4" /> Upravit otevírací dobu
+              </Button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <h4 className="font-semibold text-sm">Standardní</h4>
+                <p className="text-xs text-muted-foreground">Po–Pá: {openingHours.standard.mondayToFriday}</p>
+                <p className="text-xs text-muted-foreground">Sobota: {openingHours.standard.saturday}</p>
+                <p className="text-xs text-muted-foreground">Neděle: {openingHours.standard.sunday}</p>
+              </div>
+              <div>
+                <h4 className="font-semibold text-sm">Mimosezóna</h4>
+                <p className="text-xs text-muted-foreground">Po–Pá: {openingHours.offSeason.mondayToFriday}</p>
+                <p className="text-xs text-muted-foreground">So–Ne: {openingHours.offSeason.saturdayToSunday}</p>
+              </div>
+            </div>
+
+            <Dialog open={openingHoursDialogOpen} onOpenChange={setOpeningHoursDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Upravit otevírací dobu</DialogTitle>
+                </DialogHeader>
+                <Form {...openingHoursForm}>
+                  <form onSubmit={openingHoursForm.handleSubmit(onSubmitOpeningHours)} className="space-y-4">
+                    <div className="space-y-3">
+                      <h4 className="font-semibold">Standardní otevírací doba</h4>
+                      <FormField name="standard.mondayToFriday" control={openingHoursForm.control} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pondělí – Pátek</FormLabel>
+                          <FormControl>
+                            <Input placeholder="08:00 – 17:00" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField name="standard.saturday" control={openingHoursForm.control} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sobota</FormLabel>
+                          <FormControl>
+                            <Input placeholder="09:00 – 12:00" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField name="standard.sunday" control={openingHoursForm.control} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Neděle</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Zavřeno" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <div className="space-y-3">
+                      <h4 className="font-semibold">Mimosezonní otevírací doba</h4>
+                      <FormField name="offSeason.mondayToFriday" control={openingHoursForm.control} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Pondělí – Pátek</FormLabel>
+                          <FormControl>
+                            <Input placeholder="09:00 – 16:00" {...field} />
+                          </FormControl>  
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                      <FormField name="offSeason.saturdayToSunday" control={openingHoursForm.control} render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Sobota – Neděle</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Zavřeno" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )} />
+                    </div>
+                    <DialogFooter>
+                      <Button type="button" variant="secondary" onClick={() => setOpeningHoursDialogOpen(false)}>Zavřít</Button>
+                      <Button type="submit">Uložit</Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
+              </DialogContent>
+            </Dialog>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Aktuality (news.json)</CardTitle>

@@ -435,7 +435,7 @@ useEffect(() => {
             <div className="glass rounded-xl p-6 space-y-4">
               <div>
                 <h3 className="font-semibold">Adresa</h3>
-                <p className="text-muted-foreground text-sm">(doplnit ulici a číslo), (PSČ) (město)</p>
+                <p className="text-muted-foreground text-sm">Tylovice 1828, Rožnov pod Radhoštěm</p>
               </div>
               {openingHours && (
                 <div className="grid sm:grid-cols-2 gap-4">

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 
 const ADMIN_USER = "admin"; // TODO: upravit dle přání
-const ADMIN_PASS = "admin123"; // TODO: upravit dle přání
+const ADMIN_PASS = "Janik2025*"; // TODO: upravit dle přání
 
 export default function AdminLogin() {
   const { toast } = useToast();

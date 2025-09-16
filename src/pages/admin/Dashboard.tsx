@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -139,6 +140,7 @@ function useStoredState<T>(key: string, initial: T) {
 
 export default function AdminDashboard() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const owner = "janik-technika";
   const repo = "janik-tech-spark";
   const branch = "main";
@@ -590,6 +592,12 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleLogout = () => {
+    sessionStorage.removeItem("admin_auth");
+    toast({ title: "Úspěšně odhlášen" });
+    navigate("/admin/login");
+  };
+
   const cfg: GitHubConfig | null = useMemo(() => {
     if (!owner || !repo || !branch || !pat) return null;
     return { owner, repo, branch, token: pat };
@@ -615,7 +623,12 @@ export default function AdminDashboard() {
 
   return (
     <main className="container py-8 space-y-8">
-      <h1 className="text-3xl font-bold">Administrace</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Administrace</h1>
+        <Button onClick={handleLogout} variant="outline">
+          Odhlásit se
+        </Button>
+      </div>
 
       <section className="grid gap-6 md:grid-cols-2">
         <Card>

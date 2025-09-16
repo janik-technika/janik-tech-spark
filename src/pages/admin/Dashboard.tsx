@@ -693,12 +693,12 @@ export default function AdminDashboard() {
             </div>
 
             <Dialog open={openingHoursDialogOpen} onOpenChange={setOpeningHoursDialogOpen}>
-              <DialogContent>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Upravit otevírací dobu</DialogTitle>
                 </DialogHeader>
                 <Form {...openingHoursForm}>
-                  <form onSubmit={openingHoursForm.handleSubmit(onSubmitOpeningHours)} className="space-y-4">
+                  <form onSubmit={openingHoursForm.handleSubmit(onSubmitOpeningHours)} className="space-y-3">
                     <div className="space-y-3">
                       <h4 className="font-semibold">Standardní otevírací doba</h4>
                       

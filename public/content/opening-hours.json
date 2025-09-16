@@ -1,19 +1,49 @@
 {
   "standard": {
-    "monday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
-    "tuesday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
-    "wednesday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
-    "thursday": { "morning": "08:00-12:00", "afternoon": "13:00-17:00" },
-    "friday": { "morning": "08:00-12:00", "afternoon": "13:00-15:00" },
-    "saturday": "Zavřeno",
+    "monday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-17:00"
+    },
+    "tuesday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-17:00"
+    },
+    "wednesday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-17:00"
+    },
+    "thursday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-17:00"
+    },
+    "friday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-15:00"
+    },
+    "saturday": "Zavřenoo",
     "sunday": "Zavřeno"
   },
   "offSeason": {
-    "monday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
-    "tuesday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
-    "wednesday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
-    "thursday": { "morning": "08:00-12:00", "afternoon": "13:00-16:00" },
-    "friday": { "morning": "08:00-12:00", "afternoon": "" },
+    "monday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-16:00"
+    },
+    "tuesday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-16:00"
+    },
+    "wednesday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-16:00"
+    },
+    "thursday": {
+      "morning": "08:00-12:00",
+      "afternoon": "13:00-16:00"
+    },
+    "friday": {
+      "morning": "08:00-12:00",
+      "afternoon": ""
+    },
     "saturday": "Zavřeno",
     "sunday": "Zavřeno"
   }

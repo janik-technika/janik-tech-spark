@@ -82,6 +82,18 @@ type Promotion = {
   tags?: string[];
 };
 
+type OpeningHours = {
+  standard: {
+    mondayToFriday: string;
+    saturday: string;
+    sunday: string;
+  };
+  offSeason: {
+    mondayToFriday: string;
+    saturdayToSunday: string;
+  };
+};
+
 const navItems = [
   { href: "#onas", label: "O nás" },
   { href: "#sortiment", label: "Sortiment" },
@@ -114,6 +126,7 @@ const Index = () => {
 
 const [news, setNews] = useState<NewsItem[]>([]);
 const [promotions, setPromotions] = useState<Promotion[]>([]);
+const [openingHours, setOpeningHours] = useState<OpeningHours | null>(null);
 
 useEffect(() => {
   if (!heroApi) return;
@@ -140,6 +153,16 @@ useEffect(() => {
       if (!r.ok) return;
       const data = await r.json();
       if (Array.isArray(data)) setPromotions(data as Promotion[]);
+    })
+    .catch(() => {});
+}, []);
+
+useEffect(() => {
+  fetch("/content/opening-hours.json")
+    .then(async (r) => {
+      if (!r.ok) return;
+      const data = await r.json();
+      setOpeningHours(data as OpeningHours);
     })
     .catch(() => {});
 }, []);
@@ -537,6 +560,16 @@ useEffect(() => {
                 Tel.: +420 606 806 021<br/>
                 E-mail: janik.stihl@gmail.com
               </p>
+              {openingHours && (
+                <div className="mt-4">
+                  <h4 className="font-medium text-sm">Otevírací doba</h4>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    <p>Po-Pá: {openingHours.standard.mondayToFriday}</p>
+                    <p>So: {openingHours.standard.saturday}</p>
+                    <p>Ne: {openingHours.standard.sunday}</p>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <h3 className="font-semibold">Fakturační adresa</h3>

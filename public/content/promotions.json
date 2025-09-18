@@ -1,8 +1,8 @@
 [
   {
     "id": "9tuwi5rl4jtmfph0qzf",
-    "title": "PodzimnÃÂÃÂ­ akce STIHL",
-    "description": "V podzimnÃÂ­ akci od 15.9. do 30.11.2025 VÃÂ¡m nabÃÂ­zÃÂ­me ÃÂ¡irokou ÃÂ¡kÃÂ¡lu strojÃÂ¯ a pÃÂÃÂ­sluÃÂ¡enstvÃÂ­ s atraktivnÃÂ­mi slevami.",
+    "title": "Podzimní akce STIHL",
+    "description": "V podzimní akci od 15.9. do 30.11.2025 Vám nabízíme širokou škálu strojů a příslušenství s atraktivními slevami.",
     "validUntil": "2025-11-30",
     "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1758203063289-stihl_podzim_1440x1440_obecne1jp.jpg",
     "pdfUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1758192290672-A4_STIHL_e-letter_podzimni_akce_.pdf",
@@ -10,14 +10,14 @@
   },
   {
     "id": "k63syou26vgme9qgo26",
-    "title": "MAKITA DLM533 - AkumulÃÂÃÂ¡torovÃÂÃÂ¡ sekaÃÂÃÂka",
-    "description": "VÃÂÃÂ½konnÃÂÃÂ¡ akumulÃÂÃÂ¡torovÃÂÃÂ¡ sekaÃÂÃÂka s moÃÂÃÂ¾nostÃÂÃÂ­ mulÃÂÃÂovÃÂÃÂ¡nÃÂÃÂ­. IdeÃÂÃÂ¡lnÃÂÃÂ­ pro stÃÂÃÂednÃÂÃÂ­ aÃÂÃÂ¾ vÃÂÃÂtÃÂÃÂ¡ÃÂÃÂ­ zahrady. V cenÃÂÃÂ 2x akumulÃÂÃÂ¡tor 18V 5.0Ah + nabÃÂÃÂ­jeÃÂÃÂka.",
-    "price": "od 19 990 KÃÂÃÂ",
+    "title": "MAKITA DLM533 - Akumulátorová sekačka",
+    "description": "Výkonná akumulátorová sekačka s možností mulčování. Ideální pro střední až větší zahrady. V ceně 2x akumulátor 18V 5.0Ah + nabíječka.",
+    "price": "od 19 990 Kč",
     "validUntil": "2025-03-31",
     "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1755075202089-prodejakcedlm533jpg.jpg",
     "tags": [
-      "sekaÃÂÃÂka",
-      "akumulÃÂÃÂ¡tor",
+      "sekačka",
+      "akumulátor",
       "MAKITA"
     ]
   }

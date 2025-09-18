@@ -622,6 +622,22 @@ export default function AdminDashboard() {
     }
   };
 
+  // Helper: Decode base64 with proper UTF-8 handling
+  const fromBase64 = (base64: string) => {
+    try {
+      const binaryString = atob(base64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const decoder = new TextDecoder('utf-8');
+      return decoder.decode(bytes);
+    } catch (e) {
+      console.error("Chyba dekódování UTF-8:", e);
+      return atob(base64); // fallback
+    }
+  };
+
   // Načítání dat z GitHubu při startu
   const loadDataFromGitHub = async () => {
     if (!cfg) return;
@@ -634,7 +650,7 @@ export default function AdminDashboard() {
       });
       if (newsRes.ok) {
         const newsData = await newsRes.json();
-        const newsContent = JSON.parse(atob(newsData.content));
+        const newsContent = JSON.parse(fromBase64(newsData.content));
         setNews(newsContent);
       }
 
@@ -645,7 +661,7 @@ export default function AdminDashboard() {
       });
       if (promosRes.ok) {
         const promosData = await promosRes.json();
-        const promosContent = JSON.parse(atob(promosData.content));
+        const promosContent = JSON.parse(fromBase64(promosData.content));
         setPromos(promosContent);
       }
 
@@ -656,7 +672,7 @@ export default function AdminDashboard() {
       });
       if (hoursRes.ok) {
         const hoursData = await hoursRes.json();
-        const hoursContent = JSON.parse(atob(hoursData.content));
+        const hoursContent = JSON.parse(fromBase64(hoursData.content));
         setOpeningHours(hoursContent);
       }
 

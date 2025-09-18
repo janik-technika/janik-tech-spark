@@ -9,8 +9,14 @@ export type GitHubConfig = {
 };
 
 function toBase64(str: string) {
-  // Handle UTF-8 safely in browsers
-  return btoa(unescape(encodeURIComponent(str)));
+  // Handle UTF-8 safely in browsers - use TextEncoder for proper UTF-8 handling
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 async function getFileInfo(path: string, cfg: GitHubConfig) {

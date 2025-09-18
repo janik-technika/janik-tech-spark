@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { upsertFile, type GitHubConfig } from "@/lib/githubClient";
+import { clearNewsCache, clearPromotionsCache, clearOpeningHoursCache, clearAllCache, getCacheInfo } from "@/lib/dataLoader";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -169,6 +170,7 @@ export default function AdminDashboard() {
     }
   });
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [cacheStatus, setCacheStatus] = useState<string>("");
 
   // Dialog states
   const [newsDialogOpen, setNewsDialogOpen] = useState(false);
@@ -424,7 +426,7 @@ export default function AdminDashboard() {
   }, [openingHoursDialogOpen, openingHours]);
 
   // Handlers
-  const onSubmitNews = (values: z.infer<typeof newsSchema>) => {
+  const onSubmitNews = async (values: z.infer<typeof newsSchema>) => {
     const newItem: NewsItem = {
       id: values.id || genId(),
       title: values.title,
@@ -442,13 +444,18 @@ export default function AdminDashboard() {
       return arr;
     })();
     setNews(next);
-    saveJSON("news", next as any);
+    await saveJSON("news", next as any);
+    // Clear cache to ensure fresh data on main page
+    clearNewsCache();
     setNewsDialogOpen(false);
     setEditingNewsIndex(null);
-    toast({ title: editingNewsIndex != null ? "Aktualita upravena" : "Aktualita přidána" });
+    toast({ 
+      title: editingNewsIndex != null ? "Aktualita upravena" : "Aktualita přidána",
+      description: "Cache vymazána, změny budou okamžitě viditelné na hlavní stránce"
+    });
   };
 
-  const onSubmitPromo = (values: z.infer<typeof promoSchema>) => {
+  const onSubmitPromo = async (values: z.infer<typeof promoSchema>) => {
     const newItem: Promotion = {
       id: values.id || genId(),
       title: values.title,
@@ -470,13 +477,18 @@ export default function AdminDashboard() {
       return arr;
     })();
     setPromos(next);
-    saveJSON("promos", next as any);
+    await saveJSON("promos", next as any);
+    // Clear cache to ensure fresh data on main page
+    clearPromotionsCache();
     setPromoDialogOpen(false);
     setEditingPromoIndex(null);
-    toast({ title: editingPromoIndex != null ? "Akce upravena" : "Akce přidána" });
+    toast({ 
+      title: editingPromoIndex != null ? "Akce upravena" : "Akce přidána",
+      description: "Cache vymazána, změny budou okamžitě viditelné na hlavní stránce"
+    });
   };
 
-  const onSubmitOpeningHours = (values: z.infer<typeof openingHoursSchema>) => {
+  const onSubmitOpeningHours = async (values: z.infer<typeof openingHoursSchema>) => {
     const openingHoursData: OpeningHours = {
       standard: {
         monday: { morning: values.standardMondayMorning, afternoon: values.standardMondayAfternoon || "" },
@@ -498,23 +510,32 @@ export default function AdminDashboard() {
       }
     };
     setOpeningHours(openingHoursData);
-    saveJSON("opening-hours", openingHoursData);
+    await saveJSON("opening-hours", openingHoursData);
+    // Clear cache to ensure fresh data on main page
+    clearOpeningHoursCache();
     setOpeningHoursDialogOpen(false);
-    toast({ title: "Otevírací doba upravena" });
+    toast({ 
+      title: "Otevírací doba upravena",
+      description: "Cache vymazána, změny budou okamžitě viditelné na hlavní stránce"
+    });
   };
 
-  const deleteNews = (idx: number) => {
+  const deleteNews = async (idx: number) => {
     if (!confirm("Opravdu smazat tuto aktualitu?")) return;
     const next = news.filter((_, i) => i !== idx);
     setNews(next);
-    saveJSON("news", next as any);
+    await saveJSON("news", next as any);
+    clearNewsCache();
+    toast({ title: "Aktualita smazána", description: "Cache vymazána" });
   };
 
-  const deletePromo = (idx: number) => {
+  const deletePromo = async (idx: number) => {
     if (!confirm("Opravdu smazat tuto akci?")) return;
     const next = promos.filter((_, i) => i !== idx);
     setPromos(next);
-    saveJSON("promos", next as any);
+    await saveJSON("promos", next as any);
+    clearPromotionsCache();
+    toast({ title: "Akce smazána", description: "Cache vymazána" });
   };
 
   const token = useMemo(() => {
@@ -677,6 +698,7 @@ export default function AdminDashboard() {
       }
 
       setDataLoaded(true);
+      updateCacheStatus();
     } catch (e: any) {
       console.error("Chyba při načítání dat z GitHubu:", e);
       // Pokud se nepodaří načíst z GitHubu, zkusíme lokální data
@@ -700,10 +722,86 @@ export default function AdminDashboard() {
           setOpeningHours(hoursData);
         }
         setDataLoaded(true);
+        setCacheStatus("Načteno z lokálních souborů (GitHub nedostupný)");
       } catch (fallbackError) {
         console.error("Chyba při načítání lokálních dat:", fallbackError);
         setDataLoaded(true); // Použijeme výchozí data
+        setCacheStatus("Použita výchozí data (GitHub i lokální soubory nedostupné)");
       }
+    }
+  };
+
+  // Update cache status display
+  const updateCacheStatus = () => {
+    const newsCache = getCacheInfo("public/content/news.json");
+    const promosCache = getCacheInfo("public/content/promotions.json");  
+    const hoursCache = getCacheInfo("public/content/opening-hours.json");
+    
+    if (newsCache || promosCache || hoursCache) {
+      const oldest = Math.min(
+        newsCache?.expires || Infinity,
+        promosCache?.expires || Infinity,
+        hoursCache?.expires || Infinity
+      );
+      setCacheStatus(`Data z cache, vyprší za ${Math.ceil(oldest / 1000)}s`);
+    } else {
+      setCacheStatus("Načteno z GitHubu (čerstvá data)");
+    }
+  };
+
+  // Force refresh function
+  const forceRefresh = async () => {
+    if (!cfg) return;
+    
+    setDataLoaded(false);
+    setCacheStatus("Vynucené obnovení...");
+    clearAllCache();
+    
+    try {
+      // Force fresh data from GitHub with cache busting
+      const timestamp = Date.now();
+      const [newsRes, promosRes, hoursRes] = await Promise.all([
+        fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/public/content/news.json?ref=${cfg.branch}&t=${timestamp}`, {
+          headers: { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" }
+        }),
+        fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/public/content/promotions.json?ref=${cfg.branch}&t=${timestamp}`, {
+          headers: { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" }
+        }),
+        fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/public/content/opening-hours.json?ref=${cfg.branch}&t=${timestamp}`, {
+          headers: { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" }
+        })
+      ]);
+
+      if (newsRes.ok) {
+        const newsData = await newsRes.json();
+        const newsContent = JSON.parse(fromBase64(newsData.content));
+        setNews(newsContent);
+      }
+      if (promosRes.ok) {
+        const promosData = await promosRes.json();
+        const promosContent = JSON.parse(fromBase64(promosData.content));
+        setPromos(promosContent);
+      }
+      if (hoursRes.ok) {
+        const hoursData = await hoursRes.json();
+        const hoursContent = JSON.parse(fromBase64(hoursData.content));
+        setOpeningHours(hoursContent);
+      }
+
+      setDataLoaded(true);
+      setCacheStatus("✅ Vymuceně obnoveno z GitHubu (čerstvá data)");
+      toast({ 
+        title: "Data obnovena", 
+        description: "Načtena nejnovější data z GitHubu, cache vymazána" 
+      });
+    } catch (error) {
+      console.error("Chyba při vynuceném obnovení:", error);
+      setCacheStatus("❌ Chyba při vynuceném obnovení");
+      toast({ 
+        title: "Chyba obnovení", 
+        description: "Nepodařilo se načíst čerstvá data z GitHubu",
+        variant: "destructive"
+      });
     }
   };
 
@@ -765,18 +863,42 @@ export default function AdminDashboard() {
       </section>
 
       {cfg && (
-        <div className="flex justify-between items-center">
-          <p className="text-sm text-muted-foreground">
-            {dataLoaded ? "Data načtena z GitHubu" : "Načítání dat..."}
-          </p>
-          <Button 
-            onClick={() => { setDataLoaded(false); loadDataFromGitHub(); }} 
-            variant="outline" 
-            size="sm"
-            disabled={!dataLoaded}
-          >
-            Obnovit data z GitHubu
-          </Button>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">
+                {dataLoaded ? "Data načtena" : "Načítání dat..."}
+              </p>
+              {cacheStatus && (
+                <p className="text-xs text-muted-foreground">{cacheStatus}</p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => { setDataLoaded(false); loadDataFromGitHub(); }} 
+                variant="outline" 
+                size="sm"
+                disabled={!dataLoaded}
+              >
+                Obnovit data
+              </Button>
+              <Button 
+                onClick={forceRefresh} 
+                variant="default" 
+                size="sm"
+                disabled={!dataLoaded}
+              >
+                Vynutit refresh
+              </Button>
+              <Button 
+                onClick={() => window.open("/", "_blank")} 
+                variant="secondary" 
+                size="sm"
+              >
+                Zobrazit web
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

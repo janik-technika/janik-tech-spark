@@ -15,7 +15,13 @@ const DEFAULT_CONFIG: GitHubDataConfig = {
 
 // Cache for GitHub data to avoid repeated API calls
 const dataCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 30 * 1000; // 30 seconds for faster propagation
+
+// Debug logging for data sources
+const logDataSource = (source: 'cache' | 'github' | 'local', path: string, fromCache?: boolean) => {
+  const emoji = source === 'cache' ? '💾' : source === 'github' ? '🌐' : '📁';
+  console.log(`${emoji} Data loaded from ${source}:`, path, fromCache ? '(cached)' : '(fresh)');
+};
 
 function fromBase64(base64Str: string): string {
   try {
@@ -34,17 +40,20 @@ function fromBase64(base64Str: string): string {
   }
 }
 
-async function loadFromGitHub(path: string, config: GitHubDataConfig = DEFAULT_CONFIG): Promise<any | null> {
+async function loadFromGitHub(path: string, config: GitHubDataConfig = DEFAULT_CONFIG, forceRefresh: boolean = false): Promise<any | null> {
   try {
     const cacheKey = `${config.owner}/${config.repo}/${config.branch}/${path}`;
     const cached = dataCache.get(cacheKey);
     
-    // Return cached data if still valid
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    // Return cached data if still valid and not forcing refresh
+    if (!forceRefresh && cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      logDataSource('cache', path, true);
       return cached.data;
     }
 
-    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(config.branch)}`;
+    // Add cache busting timestamp parameter
+    const cacheBuster = forceRefresh ? `&t=${Date.now()}` : '';
+    const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(config.branch)}${cacheBuster}`;
     const response = await fetch(url, {
       headers: {
         Accept: "application/vnd.github+json",
@@ -66,6 +75,7 @@ async function loadFromGitHub(path: string, config: GitHubDataConfig = DEFAULT_C
       
       // Cache the parsed data
       dataCache.set(cacheKey, { data: parsedData, timestamp: Date.now() });
+      logDataSource('github', path, false);
       
       return parsedData;
     }
@@ -81,16 +91,18 @@ async function loadFromLocal(path: string): Promise<any | null> {
   try {
     const response = await fetch(path);
     if (!response.ok) return null;
-    return await response.json();
+    const data = await response.json();
+    logDataSource('local', path, false);
+    return data;
   } catch (error) {
     console.warn(`Failed to load local file (${path}):`, error);
     return null;
   }
 }
 
-export async function loadData<T>(localPath: string, githubPath: string): Promise<T | null> {
+export async function loadData<T>(localPath: string, githubPath: string, forceRefresh: boolean = false): Promise<T | null> {
   // First, try to load from GitHub (latest data)
-  const githubData = await loadFromGitHub(githubPath);
+  const githubData = await loadFromGitHub(githubPath, DEFAULT_CONFIG, forceRefresh);
   if (githubData !== null) {
     return githubData as T;
   }
@@ -105,7 +117,56 @@ export async function loadData<T>(localPath: string, githubPath: string): Promis
   return null;
 }
 
+// Force refresh functions that bypass cache
+export async function loadDataForced<T>(localPath: string, githubPath: string): Promise<T | null> {
+  return loadData<T>(localPath, githubPath, true);
+}
+
+// Clear specific cache entry
+export function clearDataCache(githubPath: string, config: GitHubDataConfig = DEFAULT_CONFIG): void {
+  const cacheKey = `${config.owner}/${config.repo}/${config.branch}/${githubPath}`;
+  dataCache.delete(cacheKey);
+  console.log('🗑️ Cache cleared for:', githubPath);
+}
+
+// Clear all cache
+export function clearAllCache(): void {
+  dataCache.clear();
+  console.log('🗑️ All cache cleared');
+}
+
+// Get cache info for debugging
+export function getCacheInfo(githubPath: string, config: GitHubDataConfig = DEFAULT_CONFIG): { 
+  cached: boolean; 
+  age: number; 
+  expires: number;
+} | null {
+  const cacheKey = `${config.owner}/${config.repo}/${config.branch}/${githubPath}`;
+  const cached = dataCache.get(cacheKey);
+  
+  if (!cached) return null;
+  
+  const age = Date.now() - cached.timestamp;
+  const expires = CACHE_DURATION - age;
+  
+  return {
+    cached: true,
+    age,
+    expires: Math.max(0, expires)
+  };
+}
+
 // Convenience functions for specific data types
-export const loadNews = () => loadData<any[]>("/content/news.json", "public/content/news.json");
-export const loadPromotions = () => loadData<any[]>("/content/promotions.json", "public/content/promotions.json");
-export const loadOpeningHours = () => loadData<any>("/content/opening-hours.json", "public/content/opening-hours.json");
+export const loadNews = (forceRefresh?: boolean) => loadData<any[]>("/content/news.json", "public/content/news.json", forceRefresh);
+export const loadPromotions = (forceRefresh?: boolean) => loadData<any[]>("/content/promotions.json", "public/content/promotions.json", forceRefresh);
+export const loadOpeningHours = (forceRefresh?: boolean) => loadData<any>("/content/opening-hours.json", "public/content/opening-hours.json", forceRefresh);
+
+// Forced refresh versions
+export const loadNewsForced = () => loadNews(true);
+export const loadPromotionsForced = () => loadPromotions(true);
+export const loadOpeningHoursForced = () => loadOpeningHours(true);
+
+// Cache clearing for specific data types
+export const clearNewsCache = () => clearDataCache("public/content/news.json");
+export const clearPromotionsCache = () => clearDataCache("public/content/promotions.json");
+export const clearOpeningHoursCache = () => clearDataCache("public/content/opening-hours.json");

@@ -168,6 +168,7 @@ export default function AdminDashboard() {
       sunday: "Zavřeno"
     }
   });
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   // Dialog states
   const [newsDialogOpen, setNewsDialogOpen] = useState(false);
@@ -621,6 +622,82 @@ export default function AdminDashboard() {
     }
   };
 
+  // Načítání dat z GitHubu při startu
+  const loadDataFromGitHub = async () => {
+    if (!cfg) return;
+    
+    try {
+      // Načtení aktualit
+      const newsUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/public/content/news.json?ref=${cfg.branch}`;
+      const newsRes = await fetch(newsUrl, {
+        headers: { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" }
+      });
+      if (newsRes.ok) {
+        const newsData = await newsRes.json();
+        const newsContent = JSON.parse(atob(newsData.content));
+        setNews(newsContent);
+      }
+
+      // Načtení promocí
+      const promosUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/public/content/promotions.json?ref=${cfg.branch}`;
+      const promosRes = await fetch(promosUrl, {
+        headers: { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" }
+      });
+      if (promosRes.ok) {
+        const promosData = await promosRes.json();
+        const promosContent = JSON.parse(atob(promosData.content));
+        setPromos(promosContent);
+      }
+
+      // Načtení otevírací doby
+      const hoursUrl = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/public/content/opening-hours.json?ref=${cfg.branch}`;
+      const hoursRes = await fetch(hoursUrl, {
+        headers: { Authorization: `Bearer ${cfg.token}`, Accept: "application/vnd.github+json" }
+      });
+      if (hoursRes.ok) {
+        const hoursData = await hoursRes.json();
+        const hoursContent = JSON.parse(atob(hoursData.content));
+        setOpeningHours(hoursContent);
+      }
+
+      setDataLoaded(true);
+    } catch (e: any) {
+      console.error("Chyba při načítání dat z GitHubu:", e);
+      // Pokud se nepodaří načíst z GitHubu, zkusíme lokální data
+      try {
+        const [newsRes, promosRes, hoursRes] = await Promise.all([
+          fetch("/content/news.json"),
+          fetch("/content/promotions.json"), 
+          fetch("/content/opening-hours.json")
+        ]);
+        
+        if (newsRes.ok) {
+          const newsData = await newsRes.json();
+          setNews(newsData);
+        }
+        if (promosRes.ok) {
+          const promosData = await promosRes.json();
+          setPromos(promosData);
+        }
+        if (hoursRes.ok) {
+          const hoursData = await hoursRes.json();
+          setOpeningHours(hoursData);
+        }
+        setDataLoaded(true);
+      } catch (fallbackError) {
+        console.error("Chyba při načítání lokálních dat:", fallbackError);
+        setDataLoaded(true); // Použijeme výchozí data
+      }
+    }
+  };
+
+  // Načtení dat při změně konfigurace
+  useEffect(() => {
+    if (cfg && !dataLoaded) {
+      loadDataFromGitHub();
+    }
+  }, [cfg, dataLoaded]);
+
   return (
     <main className="container py-8 space-y-8">
       <div className="flex justify-between items-center">
@@ -670,6 +747,22 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </section>
+
+      {cfg && (
+        <div className="flex justify-between items-center">
+          <p className="text-sm text-muted-foreground">
+            {dataLoaded ? "Data načtena z GitHubu" : "Načítání dat..."}
+          </p>
+          <Button 
+            onClick={() => { setDataLoaded(false); loadDataFromGitHub(); }} 
+            variant="outline" 
+            size="sm"
+            disabled={!dataLoaded}
+          >
+            Obnovit data z GitHubu
+          </Button>
+        </div>
+      )}
 
       <section className="grid gap-6 md:grid-cols-3">
         <Card>

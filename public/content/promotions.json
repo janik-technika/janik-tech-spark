@@ -7,18 +7,5 @@
     "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1758203063289-stihl_podzim_1440x1440_obecne1jp.jpg",
     "pdfUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1758192290672-A4_STIHL_e-letter_podzimni_akce_.pdf",
     "tags": []
-  },
-  {
-    "id": "4mcllajw8nemfpo1dfc",
-    "title": "MAKITA DLM533 - Akumulátorová sekačka",
-    "description": "Výkonná akumulátorová sekačka s možností mulčování. Ideální pro střední až větší zahrady. V ceně 2x akumulátor 18V 5.0Ah + nabíječka.",
-    "price": "od 19 990 Kč",
-    "validUntil": "2025-09-30",
-    "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1755075202089-prodejakcedlm533jpg.jpg",
-    "tags": [
-      "sekačka",
-      "akumulátor",
-      "MAKITA"
-    ]
   }
 ]

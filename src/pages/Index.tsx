@@ -152,33 +152,42 @@ useEffect(() => {
 }, [heroApi]);
 
 useEffect(() => {
-  fetch("/content/news.json")
-    .then(async (r) => {
-      if (!r.ok) return;
-      const data = await r.json();
+  const loadNewsData = async () => {
+    try {
+      const { loadNews } = await import("@/lib/dataLoader");
+      const data = await loadNews();
       if (Array.isArray(data)) setNews(data as NewsItem[]);
-    })
-    .catch(() => {});
+    } catch (error) {
+      console.warn("Failed to load news:", error);
+    }
+  };
+  loadNewsData();
 }, []);
 
 useEffect(() => {
-  fetch("/content/promotions.json")
-    .then(async (r) => {
-      if (!r.ok) return;
-      const data = await r.json();
+  const loadPromotionsData = async () => {
+    try {
+      const { loadPromotions } = await import("@/lib/dataLoader");
+      const data = await loadPromotions();
       if (Array.isArray(data)) setPromotions(data as Promotion[]);
-    })
-    .catch(() => {});
+    } catch (error) {
+      console.warn("Failed to load promotions:", error);
+    }
+  };
+  loadPromotionsData();
 }, []);
 
 useEffect(() => {
-  fetch("/content/opening-hours.json")
-    .then(async (r) => {
-      if (!r.ok) return;
-      const data = await r.json();
-      setOpeningHours(data as OpeningHours);
-    })
-    .catch(() => {});
+  const loadOpeningHoursData = async () => {
+    try {
+      const { loadOpeningHours } = await import("@/lib/dataLoader");
+      const data = await loadOpeningHours();
+      if (data) setOpeningHours(data as OpeningHours);
+    } catch (error) {
+      console.warn("Failed to load opening hours:", error);
+    }
+  };
+  loadOpeningHoursData();
 }, []);
 
 

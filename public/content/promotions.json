@@ -1,35 +1,36 @@
 [
   {
-    "id": "7aodybmtefmfpaavpm",
-    "title": "Podzimní akce STIHL",
+    "id": "ycfpqqrrm3imfpgprbc",
+    "title": "PodzimnÃ­ akce STIHL",
     "description": "V podzimní akci od 15.9. do 30.11.2025 Vám nabízíme širokou škálu strojů a příslušenství s atraktivními slevami.",
     "validUntil": "2025-11-30",
+    "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1758203063289-stihl_podzim_1440x1440_obecne1jp.jpg",
     "pdfUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1758192290672-A4_STIHL_e-letter_podzimni_akce_.pdf",
     "tags": []
   },
   {
     "id": "k63syou26vgme9qgo26",
-    "title": "MAKITA DLM533 - Akumulátorová sekačka",
-    "description": "Výkonná akumulátorová sekačka s možností mulčování. Ideální pro střední až větší zahrady. V ceně 2x akumulátor 18V 5.0Ah + nabíječka.",
-    "price": "od 19 990 Kč",
+    "title": "MAKITA DLM533 - AkumulÃ¡torovÃ¡ sekaÄka",
+    "description": "VÃ½konnÃ¡ akumulÃ¡torovÃ¡ sekaÄka s moÅ¾nostÃ­ mulÄovÃ¡nÃ­. IdeÃ¡lnÃ­ pro stÅednÃ­ aÅ¾ vÄtÅ¡Ã­ zahrady. V cenÄ 2x akumulÃ¡tor 18V 5.0Ah + nabÃ­jeÄka.",
+    "price": "od 19 990 KÄ",
     "validUntil": "2025-03-31",
     "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1755075202089-prodejakcedlm533jpg.jpg",
     "tags": [
-      "sekačka",
-      "akumulátor",
+      "sekaÄka",
+      "akumulÃ¡tor",
       "MAKITA"
     ]
   },
   {
     "id": "cqrceb80phwme9qofma",
-    "title": "STIGA Robotické sekačky - jarní akce",
-    "description": "Kompletní sortiment robotických sekaček STIGA za akční ceny. Včetně instalace a uvedení do provozu zdarma.",
-    "price": "od 24 990 Kč",
+    "title": "STIGA RobotickÃ© sekaÄky - jarnÃ­ akce",
+    "description": "KompletnÃ­ sortiment robotickÃ½ch sekaÄek STIGA za akÄnÃ­ ceny. VÄetnÄ instalace a uvedenÃ­ do provozu zdarma.",
+    "price": "od 24 990 KÄ",
     "validUntil": "2025-04-30",
     "imageUrl": "https://raw.githubusercontent.com/janik-technika/janik-tech-spark/main/public/content/uploads/promos/1755075563803-PRODEJAKCESTIGA2png.png",
     "tags": [
       "robot",
-      "sekačka",
+      "sekaÄka",
       "STIGA",
       "instalace"
     ]

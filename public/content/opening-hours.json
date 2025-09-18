@@ -20,8 +20,8 @@
       "morning": "08:00-12:00",
       "afternoon": "13:00-15:00"
     },
-    "saturday": "ZavÅeno",
-    "sunday": "ZavÅeno"
+    "saturday": "Zavřeno",
+    "sunday": "Zavřeno"
   },
   "offSeason": {
     "monday": {
@@ -44,7 +44,7 @@
       "morning": "08:00-12:00",
       "afternoon": ""
     },
-    "saturday": "ZavÅeno",
-    "sunday": "ZavÅeno"
+    "saturday": "Zavřeno",
+    "sunday": "Zavřeno"
   }
 }

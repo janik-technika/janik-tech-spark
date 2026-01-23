@@ -6,6 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from "@/com
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import Map from "@/components/Map";
 import janikLogo from "@/assets/janik-logo.jpg";
+import webriseLogo from "@/assets/webrise-logo.png";
 const BRAND_LOGOS = {
   STIHL: "/lovable-uploads/d0f7fbfe-0589-4109-8a4b-be0d27769063.png",
   STIGA: "/lovable-uploads/b306d60a-e713-429d-a0fe-770995392933.png",
@@ -627,6 +628,17 @@ useEffect(() => {
             <a href="#kontakt" className="hover:underline">Kontakt</a>
             <a href="/admin" className="hover:underline">Administrace</a>
           </nav>
+        </div>
+        <div className="container pb-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <span>Designed by</span>
+          <a 
+            href="https://webrise-studio.cz" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:opacity-80 transition-opacity"
+          >
+            <img src={webriseLogo} alt="WebRise Studio" className="h-6" />
+          </a>
         </div>
       </footer>
     </div>
